@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Daily Spark</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="home">Home</string>
+    <string name="explore">Explore</string>
+    <string name="saved">Saved</string>
+    <string name="profile">Profile</string>
+    <string name="daily_spark">Daily Spark</string>
+    <string name="search_icon">Search icon</string>
+    <string name="my_categories">My Categories</string>
+</resources>

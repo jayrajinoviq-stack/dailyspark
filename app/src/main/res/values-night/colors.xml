@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="background">#F5F2EC</color>
+    <color name="card">#FFFFFF</color>
+    <color name="card_secondary">#F0EDE4</color>
+
+    <color name="accent">#E08C00</color>
+    <color name="accent_secondary">#C97A10</color>
+
+    <color name="text_primary">#1A1A1A</color>
+    <color name="text_secondary">#777770</color>
+
+    <color name="border">#14000000</color>
+
+    <color name="success">#3DCBA0</color>
+    <color name="info">#5AAAE8</color>
+    <color name="warning">#E08C00</color>
+    <color name="coral">#E87A56</color>
+    <color name="purple">#A49EED</color>
+    <color name="error">#E84545</color>
+
+    <color name="input_background">#FFFFFF</color>
+    <color name="hint_text">#999999</color>
+</resources>

@@ -1,0 +1,59 @@
+package com.example.dailyspark.repository
+
+import android.content.Context
+import android.util.Log
+import com.example.dailyspark.data.dao.QuoteDao
+import com.example.dailyspark.model.QuoteEntity
+import com.example.dailyspark.service.ApiService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+
+val TAG = "Repository"
+
+class QuoteRepository(
+    private val api: ApiService,
+    private val dao: QuoteDao,
+    context: Context
+) {
+    private val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+
+    val allQuotes: Flow<List<QuoteEntity>> = dao.getAllQuotes()
+    val favouriteQuotes: Flow<List<QuoteEntity>> = dao.getFavouriteQuotes()
+
+    fun getFilteredQuotes(query: String, category: String): Flow<List<QuoteEntity>> {
+        val q = query.trim()
+        return when {
+            category == "All" && q.isBlank() -> dao.getAllQuotes()
+            category == "All" && q.isNotBlank() -> dao.searchQuotes(q)
+            category != "All" && q.isBlank() -> dao.getQuotesByCategory(category)
+            else -> dao.searchAndFilterQuotes(q, category)
+        }
+    }
+
+    suspend fun toggleFavourite(id: Int) = withContext(Dispatchers.IO) {
+        dao.toggleFavourite(id)
+    }
+
+    suspend fun syncDataIfNeeded() = withContext(Dispatchers.IO) {
+        val lastSync = prefs.getLong("last_sync_time", 0L)
+        val now = System.currentTimeMillis()
+        val twentyFourHrs = 24 * 60 * 60 * 1000L
+
+        if (dao.getCount() == 0 || (now - lastSync > twentyFourHrs)) {
+            try {
+                val response = api.fetchQuotes(
+                    "sb_publishable_k46r574RPC5drOcnKYw0pA_vKvzJZW1",
+                    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpZmRseWtvbWFyaXd6cGhuZm9wIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTEwMzQxNiwiZXhwIjoyMDk2Njc5NDE2fQ.6v3v0gMsWyyL6UnATCMqSnbHNMUoHRRMPQWMU0UgkrI"
+                )
+                if (response.isNotEmpty()) {
+                    dao.upsertQuotes(response)
+                    prefs.edit().putLong("last_sync_time", now).apply()
+                    Log.d("SYNC", "Synced ${response.size} quotes")
+                }
+            } catch (e: Exception) {
+                Log.e("SYNC", "Network error: ${e.message}")
+            }
+        }
+    }
+}
