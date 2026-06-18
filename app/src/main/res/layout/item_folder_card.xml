@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="100dp"
-    android:layout_height="100dp"
+    android:layout_width="120dp"
+    android:layout_height="80dp"
     android:layout_marginEnd="10dp"
-    app:cardBackgroundColor="#2C2C2C"
+    app:cardBackgroundColor="@color/card"
     app:cardCornerRadius="12dp"
     app:cardElevation="0dp">
 
@@ -13,7 +13,7 @@
         android:layout_height="match_parent"
         android:padding="10dp">
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/ivFolderIcon"
             android:layout_width="28dp"
             android:layout_height="28dp"
@@ -23,7 +23,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tvQuoteCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -33,12 +33,11 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tvFolderName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Add"
-            android:textColor="#FFFFFF"
             android:textSize="13sp"
             android:textStyle="bold"
             android:maxLines="1"

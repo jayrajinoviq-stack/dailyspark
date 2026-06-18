@@ -9,4 +9,7 @@
     <string name="daily_spark">Daily Spark</string>
     <string name="search_icon">Search icon</string>
     <string name="my_categories">My Categories</string>
+    <string name="add">Add</string>
+    <string name="_5_10_quotes">5/10 quotes</string>
+    <string name="delete_category">Delete Category</string>
 </resources>

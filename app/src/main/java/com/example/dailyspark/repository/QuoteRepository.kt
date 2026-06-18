@@ -3,6 +3,9 @@ package com.example.dailyspark.repository
 import android.content.Context
 import android.util.Log
 import com.example.dailyspark.data.dao.QuoteDao
+import com.example.dailyspark.model.FolderEntity
+import com.example.dailyspark.model.FolderQuoteEntity
+import com.example.dailyspark.model.FolderWithCount
 import com.example.dailyspark.model.QuoteEntity
 import com.example.dailyspark.service.ApiService
 import kotlinx.coroutines.Dispatchers
@@ -56,4 +59,32 @@ class QuoteRepository(
             }
         }
     }
+
+    val folders: Flow<List<FolderWithCount>> = dao.getFoldersWithCount()
+
+    suspend fun createFolder(name: String) = withContext(Dispatchers.IO) {
+        dao.insertFolder(FolderEntity(name = name))
+    }
+
+    fun getQuotesInFolder(folderId: Int) = dao.getQuotesByFolder(folderId)
+
+    suspend fun addQuoteToFolder(quote: FolderQuoteEntity): Result<String> =
+        withContext(Dispatchers.IO) {
+            val currentCount = dao.getCountInFolder(quote.folderId)
+            if (currentCount >= 10) {
+                Result.failure(Exception("Limit reached: Max 10 quotes per folder"))
+            } else {
+                dao.insertQuoteToFolder(quote)
+                Result.success("Added successfully")
+            }
+        }
+
+    suspend fun updateQuoteInFolder(quote: FolderQuoteEntity) = withContext(Dispatchers.IO) {
+        dao.updateFolderQuote(quote)
+    }
+
+    suspend fun deleteQuoteFromFolder(quote: FolderQuoteEntity) = withContext(Dispatchers.IO) {
+        dao.deleteFolderQuote(quote)
+    }
+
 }

@@ -1,19 +1,25 @@
 package com.example.dailyspark.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.dailyspark.model.FolderQuoteEntity
+import com.example.dailyspark.model.FolderWithCount
 import com.example.dailyspark.model.QuoteEntity
 import com.example.dailyspark.repository.QuoteRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import java.util.logging.Logger
 
 sealed class QuoteUiState {
     object Loading : QuoteUiState()
@@ -26,6 +32,8 @@ class QuoteViewModel(private val repository: QuoteRepository) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
     private val _category = MutableStateFlow("All")
+
+    val currentCategory: StateFlow<String> = _category.asStateFlow()
 
     val uiState: LiveData<QuoteUiState> =
         combine(_searchQuery, _category) { q, c -> q to c }
@@ -40,17 +48,29 @@ class QuoteViewModel(private val repository: QuoteRepository) : ViewModel() {
             .onStart { emit(QuoteUiState.Loading) }
             .asLiveData()
 
-    fun onSearchQueryChanged(query: String) {
-        _searchQuery.value = query
-    }
+    val folders: LiveData<List<FolderWithCount>> = repository.folders.asLiveData()
 
-    fun onCategoryChanged(category: String) {
-        _category.value = category
-    }
+    fun onSearchQueryChanged(query: String) { _searchQuery.value = query }
+    fun onCategoryChanged(category: String) { _category.value = category }
 
     fun toggleFavourite(id: Int) {
+        viewModelScope.launch { repository.toggleFavourite(id) }
+    }
+
+    fun addNewFolder(name: String) {
+        viewModelScope.launch { repository.createFolder(name) }
+    }
+
+    fun addQuoteToFolder(folderId: Int, text: String, author: String, category: String) {
         viewModelScope.launch {
-            repository.toggleFavourite(id)
+            val newQuote = FolderQuoteEntity(
+                folderId = folderId,
+                quote = text,
+                author = author,
+                category = category
+            )
+            repository.addQuoteToFolder(newQuote)
+                .onFailure { Log.e("QuoteViewModel", "addQuoteToFolder failed: $it") }
         }
     }
 

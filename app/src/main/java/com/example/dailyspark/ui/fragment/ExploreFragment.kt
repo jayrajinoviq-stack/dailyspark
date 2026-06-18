@@ -1,15 +1,19 @@
 package com.example.dailyspark.ui.fragment
 
+import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.EditText
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dailyspark.R
+import com.example.dailyspark.ui.activity.CategoriesItemActivity
+import com.example.dailyspark.adapter.FolderAdapter
 import com.example.dailyspark.adapter.QuoteAdapter
 import com.example.dailyspark.data.database.AppDatabase
 import com.example.dailyspark.databinding.FragmentExploreBinding
@@ -17,6 +21,7 @@ import com.example.dailyspark.repository.QuoteRepository
 import com.example.dailyspark.service.ApiService
 import com.example.dailyspark.viewmodel.QuoteUiState
 import com.example.dailyspark.viewmodel.QuoteViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -24,13 +29,21 @@ class ExploreFragment : Fragment() {
 
     private var _binding: FragmentExploreBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var viewModel: QuoteViewModel
 
     private val quoteAdapter by lazy {
         QuoteAdapter(onFavouriteClick = { quote ->
             viewModel.toggleFavourite(quote.id)
         })
+    }
+
+    private val folderAdapter by lazy {
+        FolderAdapter(
+            onAddFolderClick = { showAddFolderDialog() },
+            onFolderClick = {
+                startActivity(Intent(requireContext(), CategoriesItemActivity::class.java))
+            }
+        )
     }
 
     private val categoryViews by lazy {
@@ -48,9 +61,7 @@ class ExploreFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentExploreBinding.inflate(inflater, container, false)
         return binding.root
@@ -59,10 +70,12 @@ class ExploreFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupViewModel()
-        setupRecyclerView()
+        setupQuoteRecyclerView()
+        setupFolderRecyclerView()
         setupSearch()
         setupCategoryListeners()
         observeUiState()
+        observeFolders()
         restoreUiState()
     }
 
@@ -75,16 +88,51 @@ class ExploreFragment : Fragment() {
             .create(ApiService::class.java)
 
         val repository = QuoteRepository(apiService, database.quoteDao(), requireContext())
-        val factory = QuoteViewModel.Factory(repository)
-        viewModel = ViewModelProvider(this, factory)[QuoteViewModel::class.java]
+        viewModel =
+            ViewModelProvider(this, QuoteViewModel.Factory(repository))[QuoteViewModel::class.java]
     }
 
-    private fun setupRecyclerView() {
+    private fun setupQuoteRecyclerView() {
         binding.rvList.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = quoteAdapter
             setHasFixedSize(true)
         }
+    }
+
+    private fun setupFolderRecyclerView() {
+        binding.rvFolders.apply {
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            adapter = folderAdapter
+            itemAnimator = null
+        }
+    }
+
+    private fun observeFolders() {
+        viewModel.folders.observe(viewLifecycleOwner) { folderList ->
+            folderAdapter.submitList(folderList.reversed()) {
+                (binding.rvFolders.layoutManager as LinearLayoutManager)
+                    .scrollToPositionWithOffset(0, 0)
+            }
+        }
+    }
+
+    private fun showAddFolderDialog() {
+        val editText = EditText(requireContext()).apply {
+            hint = "Folder name"
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+            setPadding(48, 24, 48, 24)
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("New Folder")
+            .setView(editText)
+            .setPositiveButton("Create") { _, _ ->
+                val name = editText.text.toString().trim()
+                if (name.isNotEmpty()) viewModel.addNewFolder(name)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun setupSearch() {
@@ -103,24 +151,15 @@ class ExploreFragment : Fragment() {
     }
 
     private fun restoreUiState() {
-        val currentCategory = try {
-            viewModel.javaClass.getDeclaredField("_category").apply {
-                isAccessible = true
-            }.let { (it.get(viewModel) as kotlinx.coroutines.flow.MutableStateFlow<String>).value }
-        } catch (e: Exception) {
-            "All"
-        }
-        updateCategorySelectionUI(currentCategory)
+        updateCategorySelectionUI(viewModel.currentCategory.value)
     }
 
     private fun updateCategorySelectionUI(selectedCategory: String) {
         categoryViews.forEach { (name, view) ->
-            val background = if (name == selectedCategory) {
-                R.drawable.bg_category_selected
-            } else {
-                R.drawable.bg_category_normal
-            }
-            view.setBackgroundResource(background)
+            view.setBackgroundResource(
+                if (name == selectedCategory) R.drawable.bg_category_selected
+                else R.drawable.bg_category_normal
+            )
         }
     }
 
@@ -128,18 +167,18 @@ class ExploreFragment : Fragment() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is QuoteUiState.Loading -> {
+                    binding.progressBar.visibility = View.VISIBLE
                     binding.rvList.visibility = View.GONE
                     binding.tvEmptyState.visibility = View.GONE
-                    binding.progressBar.visibility = View.VISIBLE
                 }
+
                 is QuoteUiState.Success -> {
                     binding.progressBar.visibility = View.GONE
                     binding.rvList.visibility = View.VISIBLE
                     binding.tvEmptyState.visibility = View.GONE
-                    quoteAdapter.submitList(state.quotes) {
-                        binding.rvList.scrollToPosition(0)
-                    }
+                    quoteAdapter.submitList(state.quotes)
                 }
+
                 is QuoteUiState.Empty -> {
                     binding.progressBar.visibility = View.GONE
                     binding.rvList.visibility = View.GONE

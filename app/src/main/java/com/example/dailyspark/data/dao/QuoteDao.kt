@@ -1,9 +1,14 @@
 package com.example.dailyspark.data.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
+import com.example.dailyspark.model.FolderEntity
+import com.example.dailyspark.model.FolderQuoteEntity
+import com.example.dailyspark.model.FolderWithCount
 import com.example.dailyspark.model.QuoteEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -68,4 +73,31 @@ interface QuoteDao {
 
     @Query("SELECT COUNT(*) FROM quotes_table")
     suspend fun getCount(): Int
+
+
+    @Query("""
+        SELECT folders.id, folders.name, COUNT(folder_quotes.id) as itemCount 
+        FROM folders LEFT JOIN folder_quotes ON folders.id = folder_quotes.folderId 
+        GROUP BY folders.id
+    """)
+    fun getFoldersWithCount(): Flow<List<FolderWithCount>>
+
+    @Insert
+    suspend fun insertFolder(folder: FolderEntity)
+
+    @Query("SELECT * FROM folder_quotes WHERE folderId = :fId")
+    fun getQuotesByFolder(fId: Int): Flow<List<FolderQuoteEntity>>
+
+    @Query("SELECT COUNT(*) FROM folder_quotes WHERE folderId = :fId")
+    suspend fun getCountInFolder(fId: Int): Int
+
+    @Insert
+    suspend fun insertQuoteToFolder(quote: FolderQuoteEntity)
+
+    @Update
+    suspend fun updateFolderQuote(quote: FolderQuoteEntity)
+
+    @Delete
+    suspend fun deleteFolderQuote(quote: FolderQuoteEntity)
+
 }

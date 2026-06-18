@@ -34,7 +34,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-
     val retrofit = Retrofit.Builder()
         .baseUrl("https://your-project-id.supabase.co/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -45,26 +44,25 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val database = AppDatabase.getDatabase(requireContext())
                 val apiServiceInstance = retrofit.create(ApiService::class.java)
-                val quoteRepo = QuoteRepository(apiServiceInstance, database.quoteDao(), requireContext())
+                val quoteRepo =
+                    QuoteRepository(apiServiceInstance, database.quoteDao(), requireContext())
                 val streakRepo = StreakRepository(requireContext())
                 return HomeViewModel(streakRepo, quoteRepo) as T
             }
         }
     }
 
-    private val categoryViews by lazy {
-        mapOf(
-            "All" to binding.catAll,
-            "Motivational" to binding.catMotivational,
-            "Love" to binding.catLove,
-            "Wisdom" to binding.catWisdom,
-            "Friendship" to binding.catFriendship,
-            "Funny" to binding.catFunny,
-            "Life" to binding.catLife,
-            "Success" to binding.catSuccess,
-            "Happiness" to binding.catHappiness
-        )
-    }
+    private fun getCategoryViews() = mapOf(
+        "All" to binding.catAll,
+        "Motivational" to binding.catMotivational,
+        "Love" to binding.catLove,
+        "Wisdom" to binding.catWisdom,
+        "Friendship" to binding.catFriendship,
+        "Funny" to binding.catFunny,
+        "Life" to binding.catLife,
+        "Success" to binding.catSuccess,
+        "Happiness" to binding.catHappiness
+    )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -76,19 +74,20 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun setupCategoryListeners() {
-        categoryViews.forEach { (name, layout) ->
+        getCategoryViews().forEach { (name, layout) ->
             layout.setOnClickListener {
-                viewModel.onCategoryChanged(name)
+                viewModel.setCategory(name)
             }
         }
     }
 
     private fun setupQuoteActions() {
-        binding.btnNext.setOnClickListener { viewModel.showRandomQuote() }
+        binding.btnNext.setOnClickListener { viewModel.showNextQuote() }
 
         binding.btnCopy.setOnClickListener {
             val text = binding.tvQuote.text.toString()
-            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipboard =
+                requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             clipboard.setPrimaryClip(ClipData.newPlainText("quote", text))
             Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
         }
@@ -102,9 +101,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         binding.btnLike.setOnClickListener {
-            viewModel.currentQuote.value?.let { quote ->
+            viewModel.uiState.value.currentQuote?.let { quote ->
                 viewModel.toggleFavourite(quote.id)
-                Toast.makeText(context, "Updated Favourites", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -112,31 +110,45 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun observeData() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Observe Categories UI
-                launch {
-                    viewModel.selectedCategory.collect { selected ->
-                        updateCategorySelectionUI(selected)
-                    }
-                }
-                launch {
-                    viewModel.currentQuote.collect { quote ->
-                        quote?.let { updateQuoteCard(it) }
-                    }
-                }
-                launch {
-                    viewModel.streakState.collect { state ->
-                        updateStreakUI(state)
-                    }
+                viewModel.uiState.collect { state ->
+                    updateCategorySelectionUI(state.selectedCategory)
+                    state.currentQuote?.let { updateQuoteCard(it) }
+                    updateStreakUI(state.streakState)
                 }
             }
         }
     }
 
     private fun updateCategorySelectionUI(selectedCategory: String) {
-        categoryViews.forEach { (name, layout) ->
+        getCategoryViews().forEach { (name, layout) ->
             val isSelected = name == selectedCategory
-            val frame = layout.getChildAt(0) as FrameLayout
-            frame.setBackgroundResource(if (isSelected) R.drawable.bg_category_selected else R.drawable.bg_category_normal)
+
+            val selectionFrame = layout.getChildAt(0) as? FrameLayout
+            selectionFrame?.setBackgroundResource(
+                if (isSelected) R.drawable.bg_category_selected
+                else R.drawable.bg_category_normal
+            )
+
+            val textView = layout.getChildAt(1) as? TextView
+            textView?.let {
+                val color = if (isSelected) {
+                    androidx.core.content.ContextCompat.getColor(
+                        requireContext(),
+                        R.color.text_primary
+                    )
+                } else {
+                    androidx.core.content.ContextCompat.getColor(
+                        requireContext(),
+                        R.color.hint_text
+                    )
+                }
+
+                it.setTextColor(color)
+                it.typeface = if (isSelected)
+                    android.graphics.Typeface.DEFAULT_BOLD
+                else
+                    android.graphics.Typeface.DEFAULT
+            }
         }
     }
 
@@ -166,18 +178,28 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.tvGreetingSmall.text = state.greeting
         binding.tvStreakCount.text = state.count.toString()
 
-        val dayViews = listOf(binding.dayMon, binding.dayTue, binding.dayWed, binding.dayThu, binding.dayFri, binding.daySat, binding.daySun)
+        val dayViews = listOf(
+            binding.dayMon,
+            binding.dayTue,
+            binding.dayWed,
+            binding.dayThu,
+            binding.dayFri,
+            binding.daySat,
+            binding.daySun
+        )
         state.dayStatuses.forEachIndexed { index, status ->
             val textView = dayViews[index]
             when (status) {
                 is HomeViewModel.DayStatus.Completed -> {
                     textView.setBackgroundResource(R.drawable.bg_streak)
-                    textView.setTextColor(Color.WHITE)
+                    textView.setTextColor(Color.BLACK)
                 }
+
                 is HomeViewModel.DayStatus.Active -> {
                     textView.setBackgroundResource(R.drawable.bg_day_active)
                     textView.setTextColor(Color.WHITE)
                 }
+
                 else -> {
                     textView.setBackgroundResource(R.drawable.bg_day_normal)
                     textView.setTextColor(Color.BLACK)

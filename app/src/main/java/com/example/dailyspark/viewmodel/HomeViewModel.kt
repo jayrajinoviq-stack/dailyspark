@@ -3,18 +3,25 @@ package com.example.dailyspark.viewmodel
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.dailyspark.model.QuoteEntity
+import com.example.dailyspark.repository.QuoteRepository
 import com.example.dailyspark.repository.StreakRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.TemporalAdjusters
-import androidx.lifecycle.viewModelScope
-import com.example.dailyspark.model.QuoteEntity
-import com.example.dailyspark.repository.QuoteRepository
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 
 class HomeViewModel(
@@ -22,11 +29,12 @@ class HomeViewModel(
     private val quoteRepository: QuoteRepository
 ) : ViewModel() {
 
-    sealed class DayStatus {
-        object Completed : DayStatus()
-        object Active : DayStatus()
-        object Normal : DayStatus()
-    }
+    data class UiState(
+        val selectedCategory: String = "All",
+        val currentQuote: QuoteEntity? = null,
+        val streakState: StreakUiState = StreakUiState(),
+        val isLoading: Boolean = true
+    )
 
     data class StreakUiState(
         val count: Int = 0,
@@ -34,95 +42,112 @@ class HomeViewModel(
         val greeting: String = ""
     )
 
-    private val _streakState = MutableStateFlow(StreakUiState())
-    val streakState: StateFlow<StreakUiState> = _streakState.asStateFlow()
+    sealed class DayStatus {
+        object Completed : DayStatus()
+        object Active    : DayStatus()
+        object Normal    : DayStatus()
+    }
 
-    private val _selectedCategory = MutableStateFlow("All")
-    val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
+    private val _uiState = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    private val categoryQuotes = _selectedCategory
-        .flatMapLatest { category -> quoteRepository.getFilteredQuotes("", category) }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
-    private val _currentQuote = MutableStateFlow<QuoteEntity?>(null)
-    val currentQuote: StateFlow<QuoteEntity?> = _currentQuote.asStateFlow()
+    private val quoteCache = mutableMapOf<String, List<QuoteEntity>>()
 
     init {
-        viewModelScope.launch {
-            categoryQuotes.collect { quotes ->
-                if (quotes.isNotEmpty() && _currentQuote.value == null) {
-                    showRandomQuote()
-                }
-            }
+        loadQuotesForCategory("All")
+    }
+
+    fun setCategory(category: String) {
+        if (_uiState.value.selectedCategory == category &&
+            _uiState.value.currentQuote != null) return
+        _uiState.update { it.copy(selectedCategory = category, isLoading = true) }
+
+        val cached = quoteCache[category]
+        if (cached != null) {
+            _uiState.update { it.copy(currentQuote = cached.random(), isLoading = false) }
+        } else {
+            loadQuotesForCategory(category)
         }
     }
 
-    fun onCategoryChanged(category: String) {
-        _selectedCategory.value = category
-        viewModelScope.launch {
-            val quotes = categoryQuotes.filter { it.isNotEmpty() }.first()
-            _currentQuote.value = quotes.random()
-        }
-    }
+    fun showNextQuote() {
+        val category = _uiState.value.selectedCategory
+        quoteCache[category]?.let { quotes ->
+            if (quotes.isEmpty()) return
 
-    fun showRandomQuote() {
-        val quotes = categoryQuotes.value
-        if (quotes.isNotEmpty()) {
-            _currentQuote.value = quotes.random()
+            val current = _uiState.value.currentQuote
+            val next = if (quotes.size > 1) quotes.filter { it.id != current?.id }.random()
+            else quotes.first()
+            _uiState.update { it.copy(currentQuote = next) }
         }
     }
 
     fun toggleFavourite(id: Int) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             quoteRepository.toggleFavourite(id)
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun updateStreak() {
-        val today = LocalDate.now()
-        val lastDateStr = streakRepository.getLastDate()
-        var currentCount = streakRepository.getStreakCount()
+        viewModelScope.launch(Dispatchers.IO) {
+            val today        = LocalDate.now()
+            val lastDateStr  = streakRepository.getLastDate()
+            var count        = streakRepository.getStreakCount()
 
-        if (lastDateStr != null) {
-            val lastDate = LocalDate.parse(lastDateStr)
-            when {
-                lastDate.isEqual(today) -> {}
-                lastDate.isEqual(today.minusDays(1)) -> {
-                    currentCount++
-                    streakRepository.saveStreak(currentCount, today.toString())
+            if (lastDateStr != null) {
+                val lastDate = LocalDate.parse(lastDateStr)
+                when {
+                    lastDate.isEqual(today)                  -> { /* already updated today */ }
+                    lastDate.isEqual(today.minusDays(1))     -> { count++; streakRepository.saveStreak(count, today.toString()) }
+                    else                                     -> { count = 1; streakRepository.saveStreak(count, today.toString()) }
                 }
-                else -> {
-                    currentCount = 1
-                    streakRepository.saveStreak(currentCount, today.toString())
+            } else {
+                count = 1
+                streakRepository.saveStreak(count, today.toString())
+            }
+
+            val monday   = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            val statuses = (0..6).map { i ->
+                val d = monday.plusDays(i.toLong())
+                when {
+                    d.isEqual(today)    -> DayStatus.Active
+                    d.isBefore(today) && (today.toEpochDay() - d.toEpochDay() < count) -> DayStatus.Completed
+                    else                -> DayStatus.Normal
                 }
             }
-        } else {
-            currentCount = 1
-            streakRepository.saveStreak(currentCount, today.toString())
-        }
 
-        val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-        val statuses = (0..6).map { i ->
-            val dateToCheck = monday.plusDays(i.toLong())
-            when {
-                dateToCheck.isEqual(today) -> DayStatus.Active
-                dateToCheck.isBefore(today) && (today.toEpochDay() - dateToCheck.toEpochDay() < currentCount) -> DayStatus.Completed
-                else -> DayStatus.Normal
+            _uiState.update {
+                it.copy(streakState = StreakUiState(
+                    count      = count,
+                    dayStatuses = statuses,
+                    greeting   = getGreeting(LocalTime.now().hour)
+                ))
             }
         }
-
-        _streakState.value = StreakUiState(
-            count = currentCount,
-            dayStatuses = statuses,
-            greeting = getGreetingMessage(LocalTime.now().hour)
-        )
     }
 
-    private fun getGreetingMessage(hour: Int): String = when (hour) {
-        in 5..11 -> "Good morning ☕"
+
+    private fun loadQuotesForCategory(category: String) {
+        viewModelScope.launch {
+            quoteRepository.getFilteredQuotes("", category)
+                .filter { it.isNotEmpty() }
+                .take(1)
+                .collect { quotes ->
+                    quoteCache[category] = quotes
+                    if (_uiState.value.selectedCategory == category) {
+                        _uiState.update {
+                            it.copy(currentQuote = quotes.random(), isLoading = false)
+                        }
+                    }
+                }
+        }
+    }
+
+    private fun getGreeting(hour: Int) = when (hour) {
+        in 5..11  -> "Good morning ☕"
         in 12..16 -> "Good afternoon ☀️"
         in 17..20 -> "Good evening ⛅"
-        else -> "Good night 🌙"
+        else      -> "Good night 🌙"
     }
 }
