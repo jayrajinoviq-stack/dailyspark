@@ -13,29 +13,6 @@ object AppConstants {
     const val DATABASE_NAME = "quotes_database"
 }
 
-//@Database(entities = [QuoteEntity::class], version = 2)
-//abstract class AppDatabase : RoomDatabase() {
-//    abstract fun quoteDao(): QuoteDao
-//
-//    companion object {
-//        @Volatile
-//        private var INSTANCE: AppDatabase? = null
-//        fun getDatabase(context: Context): AppDatabase {
-//            return INSTANCE ?: synchronized(this) {
-//                val instance = Room.databaseBuilder(
-//                    context.applicationContext,
-//                    AppDatabase::class.java,
-//                    AppConstants.DATABASE_NAME
-//                )
-//                    .fallbackToDestructiveMigration()
-//                    .build()
-//                INSTANCE = instance
-//                instance
-//            }
-//        }
-//    }
-//}
-
 @Database(
     entities = [
         QuoteEntity::class,
@@ -51,7 +28,6 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
-
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(

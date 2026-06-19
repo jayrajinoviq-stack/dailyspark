@@ -1,19 +1,25 @@
 package com.example.dailyspark.ui.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dailyspark.adapter.QuoteAdapter
 import com.example.dailyspark.data.database.AppDatabase
 import com.example.dailyspark.databinding.FragmentSavedBinding
 import com.example.dailyspark.repository.QuoteRepository
 import com.example.dailyspark.service.ApiService
+import com.example.dailyspark.ui.activity.QuotesViewActivity
 import com.example.dailyspark.viewmodel.QuoteUiState
 import com.example.dailyspark.viewmodel.QuoteViewModel
+import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -23,9 +29,15 @@ class SavedFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var viewModel: QuoteViewModel
     private val adapter by lazy {
-        QuoteAdapter(onFavouriteClick = { quote ->
-            viewModel.toggleFavourite(quote.id)
-        })
+        QuoteAdapter(
+            onFavouriteClick = { quote -> viewModel.toggleFavourite(quote.id) },
+            onItemClick = { quote, list ->
+                val intent = Intent(requireContext(), QuotesViewActivity::class.java).apply {
+
+                }
+                startActivity(intent)
+            }
+        )
     }
 
     override fun onCreateView(
@@ -67,28 +79,32 @@ class SavedFragment : Fragment() {
     }
 
     private fun observeFavourites() {
-        viewModel.favouriteUiState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is QuoteUiState.Loading -> {
-                    binding.rvFavourites.visibility = View.GONE
-                    binding.tvEmpty.visibility = View.GONE
-                    binding.totalFavItems.text = "0 Saved Quotes"
-                }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.favouriteUiState.collect { state ->
+                    when (state) {
+                        is QuoteUiState.Loading -> {
+                            binding.rvFavourites.visibility = View.GONE
+                            binding.tvEmpty.visibility = View.GONE
+                            binding.totalFavItems.text = "0 Saved Quotes"
+                        }
 
-                is QuoteUiState.Success -> {
-                    binding.rvFavourites.visibility = View.VISIBLE
-                    binding.tvEmpty.visibility = View.GONE
-                    adapter.submitList(state.quotes)
-                    binding.totalFavItems.text = "${state.quotes.size} Saved Quotes"
-                }
+                        is QuoteUiState.Success -> {
+                            binding.rvFavourites.visibility = View.VISIBLE
+                            binding.tvEmpty.visibility = View.GONE
+                            adapter.submitList(state.quotes)
+                            binding.totalFavItems.text = "${state.quotes.size} Saved Quotes"
+                        }
 
-                is QuoteUiState.Empty -> {
-                    binding.rvFavourites.visibility = View.GONE
-                    binding.tvEmpty.visibility = View.VISIBLE
-                    binding.tvEmpty.text =
-                        "No favourites yet.\nTap \u2665 on any quote to save it here."
-                    adapter.submitList(emptyList())
-                    binding.totalFavItems.text = "0 Saved Quotes"
+                        is QuoteUiState.Empty -> {
+                            binding.rvFavourites.visibility = View.GONE
+                            binding.tvEmpty.visibility = View.VISIBLE
+                            binding.tvEmpty.text =
+                                "No favourites yet.\nTap \u2665 on any quote to save it here."
+                            adapter.submitList(emptyList())
+                            binding.totalFavItems.text = "0 Saved Quotes"
+                        }
+                    }
                 }
             }
         }

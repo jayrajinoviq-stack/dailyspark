@@ -58,7 +58,7 @@
         android:text="@string/_5_10_quotes"
         app:layout_constraintBottom_toBottomOf="@+id/quotes_progress"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/quotes_progress" />
+        app:layout_constraintTop_toTopOf="@+id/quotes_progress" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMyCategories"
@@ -76,11 +76,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="25dp"
-        android:src="@drawable/add"
         android:backgroundTint="@color/accent"
-        app:tint="@android:color/white"
+        android:src="@drawable/add"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@android:color/white" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

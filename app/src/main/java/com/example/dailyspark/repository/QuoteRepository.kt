@@ -87,4 +87,9 @@ class QuoteRepository(
         dao.deleteFolderQuote(quote)
     }
 
+    suspend fun deleteFolder(folderId: Int) = withContext(Dispatchers.IO) {
+        dao.deleteFolder(folderId)
+    }
+
+
 }

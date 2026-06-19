@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
+
+
 @Entity(tableName = "quotes_table")
 data class QuoteEntity(
     @PrimaryKey
@@ -12,5 +14,5 @@ data class QuoteEntity(
     @SerializedName("category") val category: String,
     @SerializedName("author")   val author: String,
 
-    val isFavourite: Boolean = false
+    var isFavourite: Boolean = false
 )

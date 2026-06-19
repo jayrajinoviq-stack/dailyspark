@@ -96,8 +96,13 @@ interface QuoteDao {
 
     @Update
     suspend fun updateFolderQuote(quote: FolderQuoteEntity)
-
     @Delete
     suspend fun deleteFolderQuote(quote: FolderQuoteEntity)
+
+    @Query("SELECT * FROM folders WHERE id = :folderId LIMIT 1")
+    suspend fun getFolderById(folderId: Int): FolderEntity?
+    @Query("DELETE FROM folders WHERE id = :folderId")
+    suspend fun deleteFolder(folderId: Int)
+
 
 }

@@ -14,7 +14,8 @@ import com.example.dailyspark.databinding.ItemQuoteBinding
 import com.example.dailyspark.model.QuoteEntity
 
 class QuoteAdapter(
-    private val onFavouriteClick: (QuoteEntity) -> Unit
+    private val onFavouriteClick: (QuoteEntity) -> Unit,
+    private val onItemClick: (QuoteEntity, List<QuoteEntity>) -> Unit
 ) : ListAdapter<QuoteEntity, QuoteAdapter.QuoteViewHolder>(DiffCallback()) {
 
     private val pendingFavourites = mutableMapOf<Int, Boolean>()
@@ -35,6 +36,9 @@ class QuoteAdapter(
     override fun onBindViewHolder(holder: QuoteViewHolder, position: Int, payloads: MutableList<Any>) {
         if (payloads.isNotEmpty()) return
         super.onBindViewHolder(holder, position, payloads)
+        holder.itemView.setOnClickListener {
+            onItemClick(getItem(position), currentList)
+        }
     }
 
     override fun submitList(list: List<QuoteEntity>?) {
@@ -65,6 +69,7 @@ class QuoteAdapter(
                 setFavouriteIcon(newState)
                 onFavouriteClick(item)
             }
+
 
             binding.copyQuote.setOnClickListener {
                 val ctx  = binding.root.context

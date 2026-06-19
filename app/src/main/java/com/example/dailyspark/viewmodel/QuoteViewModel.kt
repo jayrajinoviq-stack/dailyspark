@@ -11,6 +11,7 @@ import com.example.dailyspark.model.FolderWithCount
 import com.example.dailyspark.model.QuoteEntity
 import com.example.dailyspark.repository.QuoteRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,20 +36,18 @@ class QuoteViewModel(private val repository: QuoteRepository) : ViewModel() {
 
     val currentCategory: StateFlow<String> = _category.asStateFlow()
 
-    val uiState: LiveData<QuoteUiState> =
+    val uiState: Flow<QuoteUiState> =
         combine(_searchQuery, _category) { q, c -> q to c }
             .flatMapLatest { (q, c) -> repository.getFilteredQuotes(q, c) }
             .map { if (it.isEmpty()) QuoteUiState.Empty else QuoteUiState.Success(it) }
             .onStart { emit(QuoteUiState.Loading) }
-            .asLiveData()
 
-    val favouriteUiState: LiveData<QuoteUiState> =
+    val favouriteUiState: Flow<QuoteUiState> =
         repository.favouriteQuotes
             .map { if (it.isEmpty()) QuoteUiState.Empty else QuoteUiState.Success(it) }
             .onStart { emit(QuoteUiState.Loading) }
-            .asLiveData()
 
-    val folders: LiveData<List<FolderWithCount>> = repository.folders.asLiveData()
+    val folders: Flow<List<FolderWithCount>> = repository.folders
 
     fun onSearchQueryChanged(query: String) { _searchQuery.value = query }
     fun onCategoryChanged(category: String) { _category.value = category }
@@ -59,6 +58,11 @@ class QuoteViewModel(private val repository: QuoteRepository) : ViewModel() {
 
     fun addNewFolder(name: String) {
         viewModelScope.launch { repository.createFolder(name) }
+    }
+
+
+    fun deleteFolder(folderId: Int) {
+        viewModelScope.launch { repository.deleteFolder(folderId) }
     }
 
     fun addQuoteToFolder(folderId: Int, text: String, author: String, category: String) {
