@@ -13,12 +13,15 @@ import com.example.dailyspark.repository.QuoteRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.logging.Logger
 
@@ -59,6 +62,32 @@ class QuoteViewModel(private val repository: QuoteRepository) : ViewModel() {
     fun addNewFolder(name: String) {
         viewModelScope.launch { repository.createFolder(name) }
     }
+
+
+    private val _quoteListState = MutableStateFlow<List<QuoteEntity>>(emptyList())
+
+    fun loadQuotesByIds(ids: List<Int>) {
+        viewModelScope.launch {
+            val quotes = repository.getQuotesByIds(ids)
+            val ordered = ids.mapNotNull { id -> quotes.find { it.id == id } }
+            _quoteListState.value = ordered
+        }
+    }
+
+    private val _quoteIds = MutableStateFlow<List<Int>>(emptyList())
+
+    val quoteListState: StateFlow<List<QuoteEntity>> =
+        _quoteIds
+            .flatMapLatest { ids ->
+                if (ids.isEmpty()) flowOf(emptyList())
+                else repository.getQuotesByIdsFlow(ids)
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun setQuoteIds(ids: List<Int>) {
+        _quoteIds.value = ids
+    }
+
 
 
     fun deleteFolder(folderId: Int) {

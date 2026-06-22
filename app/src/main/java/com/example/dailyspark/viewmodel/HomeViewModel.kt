@@ -32,6 +32,7 @@ class HomeViewModel(
     data class UiState(
         val selectedCategory: String = "All",
         val currentQuote: QuoteEntity? = null,
+        val categoryQuotes: List<QuoteEntity> = emptyList(),
         val streakState: StreakUiState = StreakUiState(),
         val isLoading: Boolean = true
     )
@@ -64,7 +65,9 @@ class HomeViewModel(
 
         val cached = quoteCache[category]
         if (cached != null) {
-            _uiState.update { it.copy(currentQuote = cached.random(), isLoading = false) }
+            _uiState.update {
+                it.copy(currentQuote = cached.random(), categoryQuotes = cached, isLoading = false)
+            }
         } else {
             loadQuotesForCategory(category)
         }
@@ -82,7 +85,20 @@ class HomeViewModel(
         }
     }
 
+//    fun toggleFavourite(id: Int) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            quoteRepository.toggleFavourite(id)
+//        }
+//    }
+
     fun toggleFavourite(id: Int) {
+        val current = _uiState.value.currentQuote ?: return
+
+        if (current.id == id) {
+            val updatedQuote = current.copy(isFavourite = !current.isFavourite)
+            _uiState.update { it.copy(currentQuote = updatedQuote) }
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
             quoteRepository.toggleFavourite(id)
         }
@@ -131,13 +147,21 @@ class HomeViewModel(
     private fun loadQuotesForCategory(category: String) {
         viewModelScope.launch {
             quoteRepository.getFilteredQuotes("", category)
-                .filter { it.isNotEmpty() }
-                .take(1)
                 .collect { quotes ->
+                    if (quotes.isEmpty()) return@collect
+
                     quoteCache[category] = quotes
+
                     if (_uiState.value.selectedCategory == category) {
-                        _uiState.update {
-                            it.copy(currentQuote = quotes.random(), isLoading = false)
+                        _uiState.update { state ->
+                            val updatedCurrentQuote = quotes.find { it.id == state.currentQuote?.id }
+                                ?: quotes.random()
+
+                            state.copy(
+                                currentQuote = updatedCurrentQuote,
+                                categoryQuotes = quotes,
+                                isLoading = false
+                            )
                         }
                     }
                 }

@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:background="@color/background"
     tools:context=".ui.activity.QuotesViewActivity">
 
@@ -63,7 +64,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Don't wish it whare \n easier.wish You Whare \n better"
+            android:paddingHorizontal="35dp"
+            android:text="Don't wish it whare easier.wish You Whare better"
             android:textSize="28dp" />
 
         <androidx.appcompat.widget.AppCompatTextView

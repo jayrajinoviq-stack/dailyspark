@@ -31,9 +31,10 @@ class SavedFragment : Fragment() {
     private val adapter by lazy {
         QuoteAdapter(
             onFavouriteClick = { quote -> viewModel.toggleFavourite(quote.id) },
-            onItemClick = { quote, list ->
+            onItemClick = { quote, currentList ->
                 val intent = Intent(requireContext(), QuotesViewActivity::class.java).apply {
-
+                    putExtra("SELECTED_QUOTE_ID", quote.id)
+                    putExtra("QUOTE_IDS", currentList.map { it.id }.toIntArray())
                 }
                 startActivity(intent)
             }

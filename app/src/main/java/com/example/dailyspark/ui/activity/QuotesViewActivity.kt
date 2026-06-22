@@ -9,30 +9,35 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Bundle
 import android.view.View
-import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.dailyspark.R
 import com.example.dailyspark.data.database.AppDatabase
 import com.example.dailyspark.databinding.ActivityQuotesViewBinding
+import com.example.dailyspark.databinding.WallpaperLayoutBinding
 import com.example.dailyspark.model.QuoteEntity
 import com.example.dailyspark.repository.QuoteRepository
 import com.example.dailyspark.service.ApiService
 import com.example.dailyspark.viewmodel.QuoteViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class QuotesViewActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityQuotesViewBinding
     private lateinit var viewModel: QuoteViewModel
     private var quotesList: List<QuoteEntity> = emptyList()
-    private var currentIndex: Int = 0
+    private var currentQuoteId: Int = -1
+    private var randomNext: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +45,7 @@ class QuotesViewActivity : AppCompatActivity() {
         binding = ActivityQuotesViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -48,6 +53,7 @@ class QuotesViewActivity : AppCompatActivity() {
 
         setupViewModel()
         handleIntentData()
+        observeQuotes()
         setupClickListeners()
     }
 
@@ -60,46 +66,57 @@ class QuotesViewActivity : AppCompatActivity() {
             .create(ApiService::class.java)
 
         val repository = QuoteRepository(apiService, database.quoteDao(), this)
-        viewModel = ViewModelProvider(this, QuoteViewModel.Factory(repository))[QuoteViewModel::class.java]
+        viewModel =
+            ViewModelProvider(this, QuoteViewModel.Factory(repository))[QuoteViewModel::class.java]
     }
 
     private fun handleIntentData() {
-        val currentQuote = intent.getSerializableExtra("QUOTE_DATA") as? QuoteEntity
-        val list = intent.getSerializableExtra("QUOTE_LIST") as? ArrayList<QuoteEntity>
+        currentQuoteId = intent.getIntExtra("SELECTED_QUOTE_ID", -1)
+        val ids = intent.getIntArrayExtra("QUOTE_IDS")?.toList() ?: emptyList()
+        randomNext = intent.getBooleanExtra("RANDOM_NEXT", false)
+        viewModel.setQuoteIds(ids)
+    }
 
-        if (list != null && currentQuote != null) {
-            quotesList = list
-            currentIndex = quotesList.indexOfFirst { it.id == currentQuote.id }
+    private fun observeQuotes() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.quoteListState.collect { list ->
+                    if (list.isEmpty()) return@collect
 
-            binding.nextQuote.visibility = View.VISIBLE
-            displayQuote(quotesList[currentIndex])
-        } else if (currentQuote != null) {
-            displayQuote(currentQuote)
-            binding.nextQuote.visibility = View.GONE
+                    val ids = intent.getIntArrayExtra("QUOTE_IDS")?.toList() ?: emptyList()
+                    quotesList = ids.mapNotNull { id -> list.find { it.id == id } }
+
+                    val current =
+                        quotesList.find { it.id == currentQuoteId } ?: quotesList.firstOrNull()
+                    if (current != null) {
+                        currentQuoteId = current.id
+                        displayQuote(current)
+                    }
+
+                    binding.nextQuote.visibility =
+                        if (randomNext && quotesList.size > 1) View.VISIBLE else View.GONE
+                }
+            }
         }
     }
 
     private fun displayQuote(item: QuoteEntity) {
         binding.quote.text = item.quote
-        binding.author.text = "--- ${item.author} ---"
+        binding.author.text = "──  ${item.author}  ──"
         binding.category.text = item.category.uppercase()
-
-        // Update Heart Icon
         updateFavoriteIcon(item.isFavourite)
     }
 
     private fun setupClickListeners() {
-
-
         binding.copyLayout.setOnClickListener {
-            val text = "${binding.quote.text} ${binding.author.text}"
+            val text = "${binding.quote.text}\n${binding.author.text}"
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             clipboard.setPrimaryClip(ClipData.newPlainText("quote", text))
             Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
         }
 
         binding.shareLayout.setOnClickListener {
-            val text = "${binding.quote.text} \n ${binding.author.text}"
+            val text = "${binding.quote.text}\n${binding.author.text}"
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, text)
@@ -107,21 +124,21 @@ class QuotesViewActivity : AppCompatActivity() {
             startActivity(Intent.createChooser(intent, "Share via"))
         }
 
-
         binding.saveLayout.setOnClickListener {
-            val currentQuote = quotesList[currentIndex]
-            viewModel.toggleFavourite(currentQuote.id)
-            currentQuote.isFavourite = !currentQuote.isFavourite
-            updateFavoriteIcon(currentQuote.isFavourite)
+            if (currentQuoteId != -1) {
+                viewModel.toggleFavourite(currentQuoteId)
+            }
         }
 
         binding.nextQuote.setOnClickListener {
-            if (currentIndex < quotesList.size - 1) {
-                currentIndex++
-                displayQuote(quotesList[currentIndex])
+            if (quotesList.isEmpty()) return@setOnClickListener
+            val next = if (quotesList.size > 1) {
+                quotesList.filter { it.id != currentQuoteId }.random()
             } else {
-                Toast.makeText(this, "End of list", Toast.LENGTH_SHORT).show()
+                quotesList.first()
             }
+            currentQuoteId = next.id
+            displayQuote(next)
         }
 
         binding.menu.setOnClickListener {
@@ -139,32 +156,103 @@ class QuotesViewActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Set Quote as Wallpaper")
             .setItems(options) { _, which ->
-//                setAsWallpaper(which)
+                setAsWallpaper(which)
             }
             .show()
     }
 
-//    private fun setAsWallpaper(choice: Int) {
-//        val bitmap = viewToBitmap(binding.quoteContainer)
-//        val wallpaperManager = WallpaperManager.getInstance(this)
-//
-//        try {
-//            val flag = when (choice) {
-//                0 -> WallpaperManager.FLAG_SYSTEM
-//                1 -> WallpaperManager.FLAG_LOCK
-//                else -> WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
-//            }
-//            wallpaperManager.setBitmap(bitmap, null, true, flag)
-//            Toast.makeText(this, "Wallpaper set successfully!", Toast.LENGTH_SHORT).show()
-//        } catch (e: Exception) {
-//            Toast.makeText(this, "Failed to set wallpaper", Toast.LENGTH_SHORT).show()
-//        }
-//    }
 
-    private fun viewToBitmap(view: View): Bitmap {
-        val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+
+    private fun createWallpaperBitmap(): Bitmap {
+
+        val wallpaperBinding =
+            WallpaperLayoutBinding.inflate(layoutInflater)
+
+        wallpaperBinding.wpCategory.text = binding.category.text
+        wallpaperBinding.wpQuote.text = binding.quote.text
+        wallpaperBinding.wpAuthor.text = binding.author.text
+
+        wallpaperBinding.root.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY)
+        )
+
+        wallpaperBinding.root.layout(
+            0,
+            0,
+            wallpaperBinding.root.measuredWidth,
+            wallpaperBinding.root.measuredHeight
+        )
+
+        val bitmap = Bitmap.createBitmap(
+            wallpaperBinding.root.measuredWidth,
+            wallpaperBinding.root.measuredHeight,
+            Bitmap.Config.ARGB_8888
+        )
+
         val canvas = Canvas(bitmap)
-        view.draw(canvas)
+
+        wallpaperBinding.root.draw(canvas)
+
         return bitmap
     }
+
+    private fun setAsWallpaper(which: Int) {
+        lifecycleScope.launch {
+
+            try {
+
+                val bitmap = createWallpaperBitmap()
+
+                val manager = WallpaperManager.getInstance(this@QuotesViewActivity)
+
+                when (which) {
+
+                    0 -> manager.setBitmap(
+                        bitmap,
+                        null,
+                        true,
+                        WallpaperManager.FLAG_SYSTEM
+                    )
+
+                    1 -> manager.setBitmap(
+                        bitmap,
+                        null,
+                        true,
+                        WallpaperManager.FLAG_LOCK
+                    )
+
+                    2 -> {
+                        manager.setBitmap(
+                            bitmap,
+                            null,
+                            true,
+                            WallpaperManager.FLAG_SYSTEM
+                        )
+
+                        manager.setBitmap(
+                            bitmap,
+                            null,
+                            true,
+                            WallpaperManager.FLAG_LOCK
+                        )
+                    }
+                }
+
+                Toast.makeText(
+                    this@QuotesViewActivity,
+                    "Wallpaper Applied",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@QuotesViewActivity,
+                    e.message,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
 }

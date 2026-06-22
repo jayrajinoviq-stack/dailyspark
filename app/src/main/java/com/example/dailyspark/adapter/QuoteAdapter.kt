@@ -12,13 +12,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.dailyspark.R
 import com.example.dailyspark.databinding.ItemQuoteBinding
 import com.example.dailyspark.model.QuoteEntity
-
 class QuoteAdapter(
     private val onFavouriteClick: (QuoteEntity) -> Unit,
     private val onItemClick: (QuoteEntity, List<QuoteEntity>) -> Unit
 ) : ListAdapter<QuoteEntity, QuoteAdapter.QuoteViewHolder>(DiffCallback()) {
 
-    private val pendingFavourites = mutableMapOf<Int, Boolean>()
+    companion object {
+        private const val PAYLOAD_FAVOURITE = "favourite_changed"
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QuoteViewHolder {
         val binding = ItemQuoteBinding.inflate(
@@ -28,48 +29,39 @@ class QuoteAdapter(
     }
 
     override fun onBindViewHolder(holder: QuoteViewHolder, position: Int) {
-        val item        = getItem(position)
-        val isFavourite = pendingFavourites[item.id] ?: item.isFavourite
-        holder.bind(item, isFavourite)
-    }
-
-    override fun onBindViewHolder(holder: QuoteViewHolder, position: Int, payloads: MutableList<Any>) {
-        if (payloads.isNotEmpty()) return
-        super.onBindViewHolder(holder, position, payloads)
+        val item = getItem(position)
+        holder.bind(item)
         holder.itemView.setOnClickListener {
-            onItemClick(getItem(position), currentList)
+            onItemClick(item, currentList)
         }
     }
 
-    override fun submitList(list: List<QuoteEntity>?) {
-        list?.forEach { entity ->
-            if (pendingFavourites[entity.id] == entity.isFavourite) {
-                pendingFavourites.remove(entity.id)
-            }
+    override fun onBindViewHolder(
+        holder: QuoteViewHolder,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        if (payloads.contains(PAYLOAD_FAVOURITE)) {
+            holder.setFavouriteIcon(getItem(position).isFavourite)
+        } else {
+            super.onBindViewHolder(holder, position, payloads)
         }
-        super.submitList(list)
     }
 
     inner class QuoteViewHolder(
         private val binding: ItemQuoteBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: QuoteEntity, isFavourite: Boolean) {
+        fun bind(item: QuoteEntity) {
             binding.tvQuote.text    = "\u201C${item.quote}\u201D"
             binding.tvAuthor.text   = "\u2014 ${item.author}"
             binding.tvCategory.text = item.category
 
-            setFavouriteIcon(isFavourite)
+            setFavouriteIcon(item.isFavourite)
 
             binding.saveFavourite.setOnClickListener {
-                val currentState = pendingFavourites[item.id] ?: item.isFavourite
-                val newState     = !currentState
-
-                pendingFavourites[item.id] = newState
-                setFavouriteIcon(newState)
                 onFavouriteClick(item)
             }
-
 
             binding.copyQuote.setOnClickListener {
                 val ctx  = binding.root.context
@@ -82,8 +74,7 @@ class QuoteAdapter(
 
         fun setFavouriteIcon(isFavourite: Boolean) {
             binding.saveFavourite.setImageResource(
-                if (isFavourite) R.drawable.heart_selected
-                else             R.drawable.heart
+                if (isFavourite) R.drawable.heart_selected else R.drawable.heart
             )
             binding.saveFavourite.contentDescription =
                 if (isFavourite) "Remove from favourites" else "Add to favourites"
@@ -93,7 +84,8 @@ class QuoteAdapter(
     class DiffCallback : DiffUtil.ItemCallback<QuoteEntity>() {
         override fun areItemsTheSame(old: QuoteEntity, new: QuoteEntity) = old.id == new.id
         override fun areContentsTheSame(old: QuoteEntity, new: QuoteEntity) = old == new
+
         override fun getChangePayload(old: QuoteEntity, new: QuoteEntity): Any? =
-            if (old.isFavourite != new.isFavourite) "suppress" else null
+            if (old.isFavourite != new.isFavourite) PAYLOAD_FAVOURITE else null
     }
 }

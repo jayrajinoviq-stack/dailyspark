@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ConcatAdapter
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dailyspark.R
 import com.example.dailyspark.adapter.AddFolderAdapter
@@ -40,9 +41,10 @@ class ExploreFragment : Fragment() {
     private val quoteAdapter by lazy {
         QuoteAdapter(
             onFavouriteClick = { quote -> viewModel.toggleFavourite(quote.id) },
-            onItemClick = { quote, list ->
+            onItemClick = { quote, currentList ->
                 val intent = Intent(requireContext(), QuotesViewActivity::class.java).apply {
-
+                    putExtra("SELECTED_QUOTE_ID", quote.id)
+                    putExtra("QUOTE_IDS", currentList.map { it.id }.toIntArray())
                 }
                 startActivity(intent)
             }
@@ -115,7 +117,10 @@ class ExploreFragment : Fragment() {
         binding.rvList.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = quoteAdapter
+
             setHasFixedSize(true)
+            setItemViewCacheSize(20)
+            (itemAnimator as? DefaultItemAnimator)?.supportsChangeAnimations = false
         }
         binding.addBtn.setOnClickListener {
             showAddFolderDialog()
@@ -132,14 +137,12 @@ class ExploreFragment : Fragment() {
 
     }
 
+    // In Fragment
     private fun observeFolders() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.folders.collect { folderList ->
-                    folderAdapter.submitList(folderList.reversed()) {
-                        (binding.rvFolders.layoutManager as LinearLayoutManager)
-                            .scrollToPositionWithOffset(0, 0)
-                    }
+                    folderAdapter.submitList(folderList)
                 }
             }
         }

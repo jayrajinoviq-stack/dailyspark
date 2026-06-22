@@ -21,6 +21,12 @@ interface QuoteDao {
     @Query("SELECT * FROM quotes_table WHERE isFavourite = 1")
     fun getFavouriteQuotes(): Flow<List<QuoteEntity>>
 
+    @Query("SELECT * FROM quotes_table WHERE id IN (:ids)")
+    suspend fun getQuotesByIds(ids: List<Int>): List<QuoteEntity>
+
+    @Query("SELECT * FROM quotes_table WHERE id IN (:ids)")
+    fun getQuotesByIdsFlow(ids: List<Int>): Flow<List<QuoteEntity>>
+
     @Query(
         """
         SELECT * FROM quotes_table

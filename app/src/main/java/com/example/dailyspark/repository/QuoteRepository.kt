@@ -34,6 +34,15 @@ class QuoteRepository(
         }
     }
 
+    suspend fun getQuotesByIds(ids: List<Int>): List<QuoteEntity> {
+        return dao.getQuotesByIds(ids)
+    }
+
+    fun getQuotesByIdsFlow(ids: List<Int>): Flow<List<QuoteEntity>> {
+        return dao.getQuotesByIdsFlow(ids)
+    }
+
+
     suspend fun toggleFavourite(id: Int) = withContext(Dispatchers.IO) {
         dao.toggleFavourite(id)
     }
