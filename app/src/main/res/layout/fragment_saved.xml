@@ -15,7 +15,7 @@
             android:id="@+id/title_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="18dp"
+            android:layout_margin="20dp"
             android:text="Saved"
             android:textSize="22dp"
             android:textStyle="bold"

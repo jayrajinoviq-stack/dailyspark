@@ -18,6 +18,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/fonts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/bg_category_normal"
+        android:paddingHorizontal="15dp"
+        android:paddingVertical="10dp"
+        android:text="Aa"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/menu"
+        app:layout_constraintEnd_toStartOf="@+id/menu"
+        app:layout_constraintTop_toTopOf="@+id/menu" />
+
+
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/menu"
         android:layout_width="24dp"
@@ -27,7 +43,6 @@
         android:src="@drawable/menu"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 
     <LinearLayout
         android:layout_width="0dp"

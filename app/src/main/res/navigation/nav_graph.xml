@@ -6,15 +6,15 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.example.dailyspark.ui.fragment.HomeFragment" />
+        android:name="com.dailyspark.mobile.ui.fragment.HomeFragment" />
     <fragment
         android:id="@+id/exploreFragment"
-        android:name="com.example.dailyspark.ui.fragment.ExploreFragment" />
+        android:name="com.dailyspark.mobile.ui.fragment.ExploreFragment" />
     <fragment
         android:id="@+id/savedFragment"
-        android:name="com.example.dailyspark.ui.fragment.SavedFragment" />
+        android:name="com.dailyspark.mobile.ui.fragment.SavedFragment" />
     <fragment
         android:id="@+id/profileFragment"
-        android:name="com.example.dailyspark.ui.fragment.ProfileFragment" />
+        android:name="com.dailyspark.mobile.ui.fragment.ProfileFragment" />
 
 </navigation>

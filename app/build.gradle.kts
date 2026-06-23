@@ -1,3 +1,7 @@
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 
 plugins {
     alias(libs.plugins.android.application)
@@ -5,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.dailyspark"
+    namespace = "com.dailyspark.mobile"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.dailyspark"
+        applicationId = "com.dailyspark.mobile"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -20,6 +24,7 @@ android {
         ksp {
             arg("room.generateKotlin", "true")
         }
+
     }
 
     buildTypes {
@@ -29,8 +34,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
         }
     }
+
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -44,7 +52,28 @@ android {
     }
 
 
+    tasks.register<Copy>("renameReleaseApk") {
+
+        val date = SimpleDateFormat(
+            "yyyy-MM-dd_HHmm",
+            Locale.getDefault()
+        ).format(Date())
+
+        from(layout.buildDirectory.dir("outputs/apk/release"))
+
+        include("*.apk")
+
+        rename {
+            "DailySpark_v${android.defaultConfig.versionName}_${android.defaultConfig.versionCode}_$date.apk"
+        }
+
+        into(layout.buildDirectory.dir("renamed-apk"))
+    }
+
 }
+
+
+
 
 dependencies {
     implementation(libs.androidx.activity.ktx)
