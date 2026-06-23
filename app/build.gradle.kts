@@ -111,4 +111,7 @@ dependencies {
 
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
+    implementation("com.github.bumptech.glide:glide:5.0.5")
+    implementation("com.tbuonomo:dotsindicator:5.0")
+
 }

@@ -1,4 +1,5 @@
 package com.dailyspark.mobile.ui.activity
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -16,7 +17,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import kotlin.jvm.java
 
 class SplashActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySplashBinding
@@ -27,8 +27,10 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val database = Room.databaseBuilder(applicationContext, AppDatabase::class.java,
-            AppConstants.DATABASE_NAME).build()
+        val database = Room.databaseBuilder(
+            applicationContext, AppDatabase::class.java,
+            AppConstants.DATABASE_NAME
+        ).build()
 
         val api = Retrofit.Builder()
             .baseUrl("https://hifdlykomariwzphnfop.supabase.co/")
@@ -39,12 +41,17 @@ class SplashActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             val delayJob = async { delay(1500) }
-
             val syncJob = async { repo.syncDataIfNeeded() }
 
             awaitAll(delayJob, syncJob)
 
-            startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+            val prefs = getSharedPreferences("onboarding", MODE_PRIVATE)
+            val isFinished = prefs.getBoolean("finished", false)
+
+            val destination =
+                if (isFinished) MainActivity::class.java else OnboardingActivity::class.java
+
+            startActivity(Intent(this@SplashActivity, destination))
             finish()
         }
     }

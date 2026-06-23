@@ -29,7 +29,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Good morning ⛅"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/text_muted"
                     android:textSize="14sp" />
 
                 <androidx.appcompat.widget.AppCompatTextView
@@ -98,6 +98,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="🔥"
+                                android:textColor="#C97A10"
                                 android:textSize="13sp" />
 
                             <TextView
@@ -107,7 +108,7 @@
                                 android:layout_marginStart="4dp"
                                 android:letterSpacing="0.1"
                                 android:text="HAPPINESS"
-                                android:textColor="#FFA500"
+                                android:textColor="#C97A10"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
 
@@ -122,6 +123,8 @@
                             android:padding="8dp"
                             android:src="@drawable/share"
                             app:tint="#AAAAAA" />
+
+
                     </RelativeLayout>
 
                     <androidx.appcompat.widget.AppCompatTextView
@@ -197,7 +200,8 @@
                                 android:layout_width="18dp"
                                 android:layout_height="18dp"
                                 android:contentDescription="Copy"
-                                android:src="@drawable/copy" />
+                                android:src="@drawable/copy"
+                                app:tint="#AAAAAA"/>
 
                             <TextView
                                 android:id="@+id/tvCopy"

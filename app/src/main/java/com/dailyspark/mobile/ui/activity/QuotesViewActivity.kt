@@ -4,13 +4,18 @@ import android.app.WallpaperManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
@@ -82,9 +87,14 @@ class QuotesViewActivity : AppCompatActivity() {
         binding.author.text = "──  $author  ──"
         binding.category.text = category.uppercase()
 
-        binding.nextQuote.visibility = View.GONE
+        binding.main.background = getGradientDrawable(category)
 
+        binding.nextQuote.visibility = View.GONE
         binding.saveLayout.visibility = View.GONE
+
+        binding.main.background = getGradientDrawable(category)
+        applyCategoryStyle(binding.category, category)
+
     }
 
 
@@ -135,6 +145,10 @@ class QuotesViewActivity : AppCompatActivity() {
         binding.quote.text = item.quote
         binding.author.text = "──  ${item.author}  ──"
         binding.category.text = item.category.uppercase()
+        binding.main.background = getGradientDrawable(item.category)
+
+        applyCategoryStyle(binding.category, item.category)
+
         updateFavoriteIcon(item.isFavourite)
     }
 
@@ -208,42 +222,51 @@ class QuotesViewActivity : AppCompatActivity() {
 
 
     private fun createWallpaperBitmap(): Bitmap {
-
-        val wallpaperBinding =
-            WallpaperLayoutBinding.inflate(layoutInflater)
+        val wallpaperBinding = WallpaperLayoutBinding.inflate(layoutInflater)
 
         val selectedTypeface = androidx.core.content.res.ResourcesCompat.getFont(this, currentTypefaceResId)
-
         wallpaperBinding.wpQuote.typeface = selectedTypeface
         wallpaperBinding.wpAuthor.typeface = selectedTypeface
 
-        wallpaperBinding.wpCategory.text = binding.category.text
+        val catText = binding.category.text.toString()
+        wallpaperBinding.wpCategory.text = catText
         wallpaperBinding.wpQuote.text = binding.quote.text
         wallpaperBinding.wpAuthor.text = binding.author.text
+
+        applyCategoryStyle(wallpaperBinding.wpCategory, catText)
+        wallpaperBinding.root.background = getGradientDrawable(catText)
 
         wallpaperBinding.root.measure(
             View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY)
         )
+        wallpaperBinding.root.layout(0, 0, 1080, 1920)
 
-        wallpaperBinding.root.layout(
-            0,
-            0,
-            wallpaperBinding.root.measuredWidth,
-            wallpaperBinding.root.measuredHeight
-        )
 
-        val bitmap = Bitmap.createBitmap(
-            wallpaperBinding.root.measuredWidth,
-            wallpaperBinding.root.measuredHeight,
-            Bitmap.Config.ARGB_8888
-        )
 
+        val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-
         wallpaperBinding.root.draw(canvas)
 
         return bitmap
+    }
+
+    private fun applyCategoryStyle(textView: TextView, category: String?) {
+        val colorHex = when (category?.lowercase()) {
+            "success", "motivational" -> "#A49EED"
+            "love", "happiness" -> "#E84545"
+            "wisdom", "life" -> "#5AAAE8"
+            "friendship" -> "#3DCBA0"
+            else -> "#F5C842"
+        }
+
+
+        val baseColor = Color.parseColor(colorHex)
+
+        textView.setTextColor(baseColor)
+
+        val alphaColor = ColorUtils.setAlphaComponent(baseColor, 38)
+        textView.backgroundTintList = ColorStateList.valueOf(alphaColor)
     }
 
     private fun setAsWallpaper(which: Int) {
@@ -303,6 +326,48 @@ class QuotesViewActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun getGradientDrawable(category: String?): GradientDrawable {
+        val isDark = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+                android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+        val colors = when (category?.lowercase()) {
+            "success", "motivational" -> if (isDark) {
+                intArrayOf(Color.parseColor("#1E1A2E"), Color.parseColor("#16101F"), Color.parseColor("#0D0D0D"))
+            } else {
+                intArrayOf(Color.parseColor("#F0EDFC"), Color.parseColor("#E5DFFA"), Color.parseColor("#F5F2EC"))
+            }
+
+            "love", "happiness" -> if (isDark) {
+                intArrayOf(Color.parseColor("#2A1414"), Color.parseColor("#1F0E0E"), Color.parseColor("#0D0D0D"))
+            } else {
+                intArrayOf(Color.parseColor("#FCEAEA"), Color.parseColor("#FAD9D9"), Color.parseColor("#F5F2EC"))
+            }
+
+            "wisdom", "life" -> if (isDark) {
+                intArrayOf(Color.parseColor("#142028"), Color.parseColor("#0F171D"), Color.parseColor("#0D0D0D"))
+            } else {
+                intArrayOf(Color.parseColor("#E8F2FC"), Color.parseColor("#D6E9FA"), Color.parseColor("#F5F2EC"))
+            }
+
+            "friendship" -> if (isDark) {
+                intArrayOf(Color.parseColor("#142822"), Color.parseColor("#0F1F19"), Color.parseColor("#0D0D0D"))
+            } else {
+                intArrayOf(Color.parseColor("#E8FCF4"), Color.parseColor("#D6F5E8"), Color.parseColor("#F5F2EC"))
+            }
+
+            else -> if (isDark) {
+                intArrayOf(Color.parseColor("#1E1A0E"), Color.parseColor("#2A2210"), Color.parseColor("#1E1A0E"), Color.parseColor("#0D0D0D"))
+            } else {
+                intArrayOf(Color.parseColor("#FFF8E8"), Color.parseColor("#FEF0C8"), Color.parseColor("#FBE8C4"), Color.parseColor("#F5F2EC"))
+            }
+        }
+
+        return GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, colors).apply {
+            gradientType = GradientDrawable.LINEAR_GRADIENT
+        }
+    }
+
     private var currentTypefaceResId: Int = R.font.montserrat
     private fun applyFontToUI(fontResId: Int) {
         val typeface = androidx.core.content.res.ResourcesCompat.getFont(this, fontResId)

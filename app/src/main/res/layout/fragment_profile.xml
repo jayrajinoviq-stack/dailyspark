@@ -9,14 +9,14 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="18dp"
             android:letterSpacing="0.1"
             android:text="PROFILE"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/text_muted"
             android:textSize="12sp"
             android:textStyle="bold" />
 
@@ -61,7 +61,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Day streak"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/text_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -100,7 +100,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Saved"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/text_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -139,7 +139,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Shared"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/text_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -163,7 +163,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
                     android:text="PREFERENCES"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/text_muted"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
@@ -209,7 +209,8 @@
                                 android:layout_alignParentEnd="true"
                                 android:layout_centerVertical="true"
                                 android:checked="true"
-                                />
+                                app:thumbTint="@color/accent"
+                                app:trackTint="#66E08C00" />
 
                         </RelativeLayout>
 
@@ -247,7 +248,10 @@
                                 android:layout_height="wrap_content"
                                 android:layout_alignParentEnd="true"
                                 android:layout_centerVertical="true"
-                                android:checked="true" />
+                                android:checked="true"
+                                app:thumbTint="@color/accent"
+                                app:trackTint="#66E08C00" />
+
                         </RelativeLayout>
 
                         <View
@@ -286,7 +290,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="8:00 AM"
-                                    android:textColor="@color/coral" />
+                                    android:textColor="@color/accent" />
 
                             </LinearLayout>
 
@@ -306,7 +310,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
                     android:text="APP"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/text_muted"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
@@ -364,7 +368,7 @@
                                 android:background="@color/accent"
                                 android:padding="5dp"
                                 android:text="Pro"
-                                android:textColor="@color/white" />
+                                android:textColor="@color/text_muted" />
 
 
                             <androidx.appcompat.widget.AppCompatImageView

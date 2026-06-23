@@ -182,7 +182,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 } else {
                     androidx.core.content.ContextCompat.getColor(
                         requireContext(),
-                        R.color.hint_text
+                        R.color.text_muted
                     )
                 }
 
@@ -275,4 +275,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onDestroyView()
         _binding = null
     }
+
+
 }

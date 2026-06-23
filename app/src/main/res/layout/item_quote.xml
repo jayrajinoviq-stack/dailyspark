@@ -19,8 +19,7 @@
             android:id="@+id/tvCategory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:background="#F5F5F5"
+            android:background="@drawable/bg_badge"
             android:paddingHorizontal="8dp"
             android:paddingVertical="2dp"
             android:text="MOTIVATIONAL"
@@ -65,9 +64,9 @@
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/save_favourite"
                 android:layout_width="20dp"
-                android:visibility="gone"
                 android:layout_height="20dp"
-                android:src="@drawable/heart" />
+                android:src="@drawable/heart"
+                android:visibility="gone" />
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/share_quote"

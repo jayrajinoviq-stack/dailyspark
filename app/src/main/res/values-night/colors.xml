@@ -13,29 +13,26 @@
     <!-- #888880 -->
     <color name="app_muted">#888880</color>
 
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="background">#0D0D0D</color>
+    <color name="card">#1A1A1A</color>
+    <color name="card_secondary">#222222</color>
 
-    <color name="background">#F5F2EC</color>
-    <color name="card">#FFFFFF</color>
-    <color name="card_secondary">#F0EDE4</color>
+    <color name="accent">#F5C842</color>
+    <color name="accent_secondary">#E88C30</color>
 
-    <color name="accent">#E08C00</color>
-    <color name="accent_secondary">#C97A10</color>
+    <color name="text_primary">#F0EDE4</color>
+    <color name="text_muted">#888880</color>
 
-    <color name="text_primary">#1A1A1A</color>
-    <color name="text_secondary">#777770</color>
+    <color name="border">#14FFFFFF</color>
 
-    <color name="border">#14000000</color>
+    <color name="navbar_background">#F20D0D0D</color>
 
-    <color name="success">#3DCBA0</color>
-    <color name="info">#5AAAE8</color>
-    <color name="warning">#E08C00</color>
-    <color name="coral">#E87A56</color>
-    <color name="purple">#A49EED</color>
-    <color name="error">#E84545</color>
+    <color name="tag_success">#3DCBA0</color>
+    <color name="tag_info">#5AAAE8</color>
+    <color name="tag_amber">#F5C842</color>
+    <color name="tag_coral">#E87A56</color>
+    <color name="tag_purple">#A49EED</color>
+    <color name="tag_red">#E84545</color>
 
-    <color name="input_background">#FFFFFF</color>
-    <color name="hint_text">#999999</color>
 
 </resources>

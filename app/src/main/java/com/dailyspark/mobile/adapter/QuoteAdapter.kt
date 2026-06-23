@@ -3,10 +3,14 @@ package com.dailyspark.mobile.adapter
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
+import androidx.core.graphics.ColorUtils
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -65,6 +69,8 @@ class QuoteAdapter(
                 updateFavouriteUI(item.isFavourite)
             }
 
+            setCategoryStyle(binding.tvCategory, item.category)
+
             binding.saveFavourite.setOnClickListener { onFavouriteClick(item) }
             binding.shareQuote.setOnClickListener { onShareClick(item) }
 
@@ -90,4 +96,27 @@ class QuoteAdapter(
         override fun getChangePayload(old: QuoteEntity, new: QuoteEntity): Any? =
             if (old.isFavourite != new.isFavourite) PAYLOAD_FAVOURITE else null
     }
+
+    private fun setCategoryStyle(textView: TextView, category: String) {
+        val colorHex = when (category.lowercase()) {
+            "motivational" -> "#A49EED"
+            "love" -> "#E84545"
+            "wisdom" -> "#5AAAE8"
+            "friendship" -> "#3DCBA0"
+            "life" -> "#3DCBA0"
+            "success" -> "#A49EED"
+            "funny", "humor", "happiness", "all" -> "#F5C842"
+            else -> "#F5C842"
+        }
+
+        val baseColor = Color.parseColor(colorHex)
+
+        textView.setTextColor(baseColor)
+
+        val alphaColor = ColorUtils.setAlphaComponent(baseColor, 40)
+        textView.backgroundTintList = ColorStateList.valueOf(alphaColor)
+
+        textView.text = category.uppercase()
+    }
+
 }
