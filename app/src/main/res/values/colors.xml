@@ -9,6 +9,7 @@
 
     <!-- #F0EDE4 -->
     <color name="app_text">#F0EDE4</color>
+    <color name="selected">#F0EDE4</color>
 
     <!-- #888880 -->
     <color name="app_muted">#888880</color>
@@ -35,5 +36,12 @@
     <color name="tag_purple">#A49EED</color>
     <color name="tag_red">#E84545</color>
 
+    <color name="quoteIcon">#33E8D18B</color>
+
+    <color name="btn_secondary_bg">#0D777770</color>
+    <color name="btn_secondary_border">#25777770</color>
+
+    <color name="input_bg">#66FFFFFF</color>
+    <color name="input_border">#14000000</color>
 
 </resources>

@@ -15,6 +15,7 @@ import com.dailyspark.mobile.repository.QuoteRepository
 import com.dailyspark.mobile.repository.StatsRepository
 import com.dailyspark.mobile.repository.StreakRepository
 import com.dailyspark.mobile.service.ApiService
+import com.dailyspark.mobile.utils.ThemeManager
 import com.dailyspark.mobile.viewmodel.ProfileViewModel
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -40,6 +41,30 @@ class ProfileFragment : Fragment() {
 
         setupViewModel()
         displayStats()
+
+        binding.switchDark.isChecked =
+            ThemeManager.isDarkMode(requireContext())
+
+        setupThemeSwitch()
+
+    }
+
+    private fun setupThemeSwitch() {
+
+        binding.switchDark.setOnCheckedChangeListener { _, isChecked ->
+
+            ThemeManager.setDarkMode(
+                requireContext(),
+                isChecked
+            )
+
+            requireActivity().recreate()
+
+            requireActivity().overridePendingTransition(
+                android.R.anim.fade_in,
+                android.R.anim.fade_out
+            )
+        }
     }
 
     private fun setupViewModel() {

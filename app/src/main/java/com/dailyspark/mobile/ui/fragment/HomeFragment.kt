@@ -4,14 +4,19 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -145,6 +150,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             binding.tvLike.text = "Liked"
         } else {
             binding.ivLike.setImageResource(R.drawable.heart)
+            binding.ivLike.imageTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(requireContext(), R.color.text_muted)
+            )
             binding.tvLike.text = "Like"
         }
     }
@@ -163,34 +171,56 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun updateCategorySelectionUI(selectedCategory: String) {
+        val accentColor =
+            androidx.core.content.ContextCompat.getColor(requireContext(), R.color.accent)
+        val mutedTextColor = Color.parseColor("#8E8E93")
+
         getCategoryViews().forEach { (name, layout) ->
             val isSelected = name == selectedCategory
 
+            val categoryThemeColor = getCategoryColor(name)
+            val pastelBg = getPastelColor(categoryThemeColor)
+
             val selectionFrame = layout.getChildAt(0) as? FrameLayout
-            selectionFrame?.setBackgroundResource(
-                if (isSelected) R.drawable.bg_category_selected
-                else R.drawable.bg_category_normal
-            )
+            selectionFrame?.let { frame ->
+                val shape = GradientDrawable()
+                shape.shape = GradientDrawable.RECTANGLE
+
+                shape.cornerRadius = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    16f,
+                    resources.displayMetrics
+                )
+
+                shape.setColor(pastelBg)
+
+                if (isSelected) {
+                    val strokeWidth = TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP,
+                        0.5f,
+                        resources.displayMetrics
+                    ).toInt()
+                    shape.setStroke(strokeWidth, accentColor)
+                } else {
+                    val strokeWidth = TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP,
+                        0.5f,
+                        resources.displayMetrics
+                    ).toInt()
+                    shape.setStroke(strokeWidth, pastelBg)
+                }
+                frame.background = shape
+            }
 
             val textView = layout.getChildAt(1) as? TextView
-            textView?.let {
-                val color = if (isSelected) {
-                    androidx.core.content.ContextCompat.getColor(
-                        requireContext(),
-                        R.color.text_primary
-                    )
+            textView?.let { tv ->
+                if (isSelected) {
+                    tv.setTextColor(accentColor)
+                    tv.typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
                 } else {
-                    androidx.core.content.ContextCompat.getColor(
-                        requireContext(),
-                        R.color.text_muted
-                    )
+                    tv.setTextColor(mutedTextColor)
+                    tv.typeface = Typeface.DEFAULT
                 }
-
-                it.setTextColor(color)
-                it.typeface = if (isSelected)
-                    android.graphics.Typeface.DEFAULT_BOLD
-                else
-                    android.graphics.Typeface.DEFAULT
             }
         }
     }
@@ -198,7 +228,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun updateQuoteCard(quote: QuoteEntity, categoryQuotes: List<QuoteEntity>) {
 
-        binding.tvQuote.text = quote.quote
+        binding.tvQuote.text = '"' + quote.quote + '"'
+
         binding.tvAuthor.text = "— ${quote.author ?: "Unknown"}"
         updateLikeButtonUI(quote.isFavourite)
 
@@ -211,7 +242,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             startActivity(intent)
         }
 
-        binding.tvQuote.text = quote.quote
+        binding.tvQuote.text = '"' + quote.quote + '"'
         binding.tvAuthor.text = "— ${quote.author ?: "Unknown"}"
         binding.tvCategory.text = quote.category.uppercase()
 
@@ -232,6 +263,23 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         emojiTextView.text = emoji
     }
 
+    private fun getPastelColor(color: Int): Int {
+        return Color.argb(40, Color.red(color), Color.green(color), Color.blue(color))
+    }
+
+    private fun getCategoryColor(category: String): Int {
+        return when (category) {
+            "All", "Funny", "Happiness" -> Color.parseColor("#F5C842")
+            "Motivational" -> Color.parseColor("#E87A56")
+            "Love" -> Color.parseColor("#E84545")
+            "Wisdom" -> Color.parseColor("#5AAAE8")
+            "Friendship", "Life" -> Color.parseColor("#3DCBA0")
+            "Success" -> Color.parseColor("#A49EED")
+            else -> Color.parseColor("#F5C842")
+        }
+    }
+
+
     private fun updateStreakUI(state: HomeViewModel.StreakUiState) {
         binding.tvGreetingSmall.text = state.greeting
         binding.tvStreakCount.text = state.count.toString()
@@ -250,7 +298,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             when (status) {
                 is HomeViewModel.DayStatus.Completed -> {
                     textView.setBackgroundResource(R.drawable.bg_streak)
-                    textView.setTextColor(Color.BLACK)
+                    textView.setTextColor(resources.getColor(R.color.accent))
                 }
 
                 is HomeViewModel.DayStatus.Active -> {
@@ -260,7 +308,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
                 else -> {
                     textView.setBackgroundResource(R.drawable.bg_day_normal)
-                    textView.setTextColor(Color.BLACK)
+                    textView.setTextColor(resources.getColor(R.color.text_primary))
                 }
             }
         }

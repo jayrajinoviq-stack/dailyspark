@@ -10,24 +10,29 @@
     tools:context=".ui.activity.QuotesViewActivity">
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:id="@+id/cancel_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_marginStart="20dp"
         android:layout_marginTop="40dp"
+        android:background="@drawable/bg_btn_secondary"
+        android:paddingHorizontal="11dp"
+        android:paddingVertical="10dp"
         android:src="@drawable/close"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/text_primary" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/fonts"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
-        android:background="@drawable/bg_category_normal"
-        android:paddingHorizontal="15dp"
+        android:background="@drawable/bg_btn_secondary"
+        android:paddingHorizontal="11dp"
         android:paddingVertical="10dp"
         android:text="Aa"
+        android:textColor="@color/text_primary"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/menu"
         app:layout_constraintEnd_toStartOf="@+id/menu"
@@ -36,11 +41,14 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/menu"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_marginTop="40dp"
         android:layout_marginEnd="20dp"
-        android:src="@drawable/menu"
+        android:background="@drawable/bg_btn_secondary"
+        android:padding="10dp"
+        android:src="@drawable/more"
+        android:tint="@color/text_primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -66,6 +74,7 @@
             android:text="MOTIVATIONAL" />
 
         <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/quote_icon"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -98,13 +107,12 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
+        android:layout_marginHorizontal="20dp"
         android:layout_marginBottom="10dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/next_quote"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
-
 
         <LinearLayout
             android:id="@+id/copyLayout"
@@ -112,6 +120,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="5dp"
             android:layout_weight="1"
+            android:background="@drawable/bg_btn_secondary"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="10dp">
@@ -119,12 +128,15 @@
             <androidx.appcompat.widget.AppCompatImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/copy" />
+                android:src="@drawable/copy"
+                android:tint="@color/text_primary" />
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Copy" />
+                android:layout_marginTop="5dp"
+                android:text="Copy"
+                android:textColor="@color/text_primary" />
 
         </LinearLayout>
 
@@ -134,6 +146,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="5dp"
             android:layout_weight="1"
+            android:background="@drawable/bg_btn_secondary"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="10dp">
@@ -147,8 +160,9 @@
             <androidx.appcompat.widget.AppCompatTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Save" />
-
+                android:layout_marginTop="5dp"
+                android:text="Save"
+                android:textColor="@color/text_primary" />
 
         </LinearLayout>
 
@@ -159,6 +173,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:layout_weight="1"
+            android:background="@drawable/bg_btn_secondary"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="10dp">
@@ -166,29 +181,56 @@
             <androidx.appcompat.widget.AppCompatImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/share" />
+                android:src="@drawable/share"
+                android:tint="@color/text_primary" />
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Share" />
+                android:layout_marginTop="5dp"
+                android:text="Share"
+                android:textColor="@color/text_primary" />
 
         </LinearLayout>
 
     </LinearLayout>
 
-    <com.google.android.material.button.MaterialButton
+    <LinearLayout
         android:id="@+id/next_quote"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
-        android:padding="15dp"
-        android:text="New quote"
+        android:background="@drawable/bg_btn_primary"
+        android:clickable="false"
+        android:enabled="false"
+        android:gravity="center"
+        android:orientation="horizontal"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvCreate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New quote"
+            android:textColor="#1A1A1A"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivCreate"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:src="@drawable/right_arrow"
+            android:tint="@color/text_muted"
+            app:tint="#1A1A1A" />
+
+    </LinearLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

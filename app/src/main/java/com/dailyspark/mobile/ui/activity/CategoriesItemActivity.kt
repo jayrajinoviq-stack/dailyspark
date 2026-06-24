@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class CategoriesItemActivity : AppCompatActivity() {
+class CategoriesItemActivity : BaseActivity() {
 
     companion object {
         const val EXTRA_FOLDER_ID = "extra_folder_id"

@@ -28,9 +28,9 @@
             android:id="@+id/searchContainer"
             android:layout_width="0dp"
             android:layout_height="56dp"
-            android:layout_marginVertical="16dp"
             android:layout_marginHorizontal="20dp"
-            android:background="@color/card"
+            android:layout_marginVertical="16dp"
+            android:background="@drawable/bg_card"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="22dp"
@@ -41,7 +41,8 @@
             <androidx.appcompat.widget.AppCompatImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:src="@drawable/search" />
+                android:src="@drawable/search"
+                android:tint="@color/text_primary" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etSearch"
@@ -60,8 +61,9 @@
                 android:id="@+id/close_btn"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:visibility="gone"
-                android:src="@drawable/close" />
+                android:src="@drawable/close"
+                android:tint="@color/text_primary"
+                android:visibility="gone" />
 
         </LinearLayout>
 
@@ -78,15 +80,15 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingStart="20dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingStart="20dp">
 
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/tvCatAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:background="@drawable/bg_category_selected"
+                    android:background="@drawable/bg_categories_cap"
                     android:paddingHorizontal="14dp"
                     android:paddingVertical="4dp"
                     android:text="All"
@@ -198,15 +200,17 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="16dp"
                 android:text="@string/my_categories"
                 android:textStyle="bold" />
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/add_btn"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:background="@color/card"
-                android:padding="5dp"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:background="@drawable/add_icon_bg"
+                android:padding="8dp"
+                android:tint="@color/accent"
                 android:src="@drawable/add" />
 
         </LinearLayout>
@@ -225,14 +229,13 @@
                 android:id="@+id/rvFolders"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="20dp"
                 android:orientation="horizontal"
+                android:paddingStart="20dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_folder_card" />
 
 
         </LinearLayout>
-
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvList"
@@ -241,8 +244,10 @@
             android:layout_marginTop="10dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/rvCategoriesLayout"
+            app:layout_constraintVertical_bias="1.0"
             tools:listitem="@layout/item_quote" />
 
         <com.google.android.material.progressindicator.CircularProgressIndicator

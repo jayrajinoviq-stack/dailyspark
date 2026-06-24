@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- #0D0D0D -->
     <color name="app_bg">#0D0D0D</color>
 
-    <!-- #F5C842 -->
     <color name="app_accent">#F5C842</color>
 
-    <!-- #F0EDE4 -->
     <color name="app_text">#F0EDE4</color>
 
-    <!-- #888880 -->
+    <color name="selected">#1A1A1A</color>
+
     <color name="app_muted">#888880</color>
 
     <color name="background">#0D0D0D</color>
@@ -23,7 +21,7 @@
     <color name="text_primary">#F0EDE4</color>
     <color name="text_muted">#888880</color>
 
-    <color name="border">#14FFFFFF</color>
+    <color name="border">#2EFFFFFF</color>
 
     <color name="navbar_background">#F20D0D0D</color>
 
@@ -34,5 +32,12 @@
     <color name="tag_purple">#A49EED</color>
     <color name="tag_red">#E84545</color>
 
+    <color name="quoteIcon">#2EE8D18B</color>
+
+    <color name="btn_secondary_bg">#0D777770</color>
+    <color name="btn_secondary_border">#25777770</color>
+
+    <color name="input_bg">#12FFFFFF</color>
+    <color name="input_border">#25FFFFFF</color>
 
 </resources>

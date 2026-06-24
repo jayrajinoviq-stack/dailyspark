@@ -15,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -37,7 +38,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class QuotesViewActivity : AppCompatActivity() {
+class QuotesViewActivity : BaseActivity() {
     private lateinit var binding: ActivityQuotesViewBinding
     private lateinit var viewModel: QuoteViewModel
     private var quotesList: List<QuoteEntity> = emptyList()
@@ -66,6 +67,10 @@ class QuotesViewActivity : AppCompatActivity() {
 
         isSingleItemMode = intent.getBooleanExtra(EXTRA_SINGLE_ITEM, false)
 
+        binding.cancelButton.setOnClickListener {
+            onBackPressedAction()
+        }
+
         if (isSingleItemMode) {
             setupSingleItemView()
             setupClickListeners()
@@ -84,6 +89,7 @@ class QuotesViewActivity : AppCompatActivity() {
         val category = intent.getStringExtra(EXTRA_QUOTE_CATEGORY) ?: ""
 
         binding.quote.text = text
+
         binding.author.text = "──  $author  ──"
         binding.category.text = category.uppercase()
 
@@ -94,7 +100,7 @@ class QuotesViewActivity : AppCompatActivity() {
 
         binding.main.background = getGradientDrawable(category)
         applyCategoryStyle(binding.category, category)
-
+        
     }
 
 
@@ -206,8 +212,15 @@ class QuotesViewActivity : AppCompatActivity() {
     }
 
     private fun updateFavoriteIcon(isFav: Boolean) {
-        val icon = if (isFav) R.drawable.heart_selected else R.drawable.heart
-        binding.saveIcon.setImageResource(icon)
+        if (isFav) {
+            binding.saveIcon.setImageResource(R.drawable.heart_selected)
+            binding.saveIcon.clearColorFilter()
+        } else {
+            binding.saveIcon.setImageResource(R.drawable.heart)
+            binding.saveIcon.setColorFilter(
+                ContextCompat.getColor(this, R.color.text_primary)
+            )
+        }
     }
 
     private fun showWallpaperDialog() {
@@ -260,10 +273,11 @@ class QuotesViewActivity : AppCompatActivity() {
             else -> "#F5C842"
         }
 
-
         val baseColor = Color.parseColor(colorHex)
 
         textView.setTextColor(baseColor)
+
+        binding.quoteIcon.setTextColor(baseColor)
 
         val alphaColor = ColorUtils.setAlphaComponent(baseColor, 38)
         textView.backgroundTintList = ColorStateList.valueOf(alphaColor)

@@ -191,7 +191,8 @@
                                 android:layout_height="36dp"
                                 android:layout_centerVertical="true"
                                 android:padding="8dp"
-                                android:src="@drawable/moon" />
+                                android:src="@drawable/moon"
+                                android:tint="@color/text_primary" />
 
                             <androidx.appcompat.widget.AppCompatTextView
                                 android:layout_width="wrap_content"
@@ -204,6 +205,7 @@
                                 android:textSize="16sp" />
 
                             <androidx.appcompat.widget.SwitchCompat
+                                android:id="@+id/switch_dark"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_alignParentEnd="true"
@@ -231,7 +233,8 @@
                                 android:layout_height="36dp"
                                 android:layout_centerVertical="true"
                                 android:padding="8dp"
-                                android:src="@drawable/notification" />
+                                android:src="@drawable/notification"
+                                android:tint="@color/text_primary" />
 
                             <androidx.appcompat.widget.AppCompatTextView
                                 android:layout_width="wrap_content"
@@ -264,13 +267,14 @@
                             android:layout_width="match_parent"
                             android:layout_height="60dp"
                             android:gravity="center"
-                            android:paddingHorizontal="10dp">
+                            android:paddingHorizontal="16dp">
 
                             <androidx.appcompat.widget.AppCompatImageView
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
                                 android:padding="8dp"
-                                android:src="@drawable/clock" />
+                                android:src="@drawable/clock"
+                                android:tint="@color/text_primary" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -332,13 +336,15 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="60dp"
-                            android:gravity="center">
+                            android:gravity="center"
+                            android:visibility="gone">
 
                             <androidx.appcompat.widget.AppCompatImageView
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
                                 android:padding="8dp"
-                                android:src="@drawable/crown" />
+                                android:src="@drawable/crown"
+                                android:tint="@color/text_primary" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -364,17 +370,21 @@
                             <androidx.appcompat.widget.AppCompatTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginHorizontal="5dp"
-                                android:background="@color/accent"
-                                android:padding="5dp"
+                                android:layout_marginHorizontal="10dp"
+                                android:background="@drawable/bg_btn_primary"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="5dp"
                                 android:text="Pro"
-                                android:textColor="@color/text_muted" />
+                                android:textColor="@color/selected"
+                                android:textSize="12dp"
+                                android:visibility="gone" />
 
 
                             <androidx.appcompat.widget.AppCompatImageView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:src="@drawable/ic_swipe" />
+                                android:src="@drawable/ic_swipe"
+                                android:tint="@color/text_primary" />
 
                         </LinearLayout>
 
@@ -382,7 +392,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:layout_marginHorizontal="16dp"
-                            android:background="@color/border" />
+                            android:background="@color/border"
+                            android:visibility="gone" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -393,7 +404,8 @@
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
                                 android:padding="8dp"
-                                android:src="@drawable/star" />
+                                android:src="@drawable/star"
+                                android:tint="@color/text_primary" />
 
                             <androidx.appcompat.widget.AppCompatTextView
                                 android:layout_width="0dp"
@@ -423,7 +435,8 @@
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
                                 android:padding="8dp"
-                                android:src="@drawable/share" />
+                                android:src="@drawable/share"
+                                android:tint="@color/text_primary" />
 
                             <androidx.appcompat.widget.AppCompatTextView
                                 android:layout_width="0dp"
@@ -442,18 +455,21 @@
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:layout_marginHorizontal="16dp"
-                            android:background="@color/border" />
+                            android:background="@color/border"
+                            android:visibility="gone" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="60dp"
-                            android:gravity="center">
+                            android:gravity="center"
+                            android:visibility="gone">
 
                             <androidx.appcompat.widget.AppCompatImageView
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
                                 android:padding="8dp"
-                                android:src="@drawable/question" />
+                                android:src="@drawable/question"
+                                android:tint="@color/text_primary" />
 
                             <androidx.appcompat.widget.AppCompatTextView
                                 android:layout_width="0dp"

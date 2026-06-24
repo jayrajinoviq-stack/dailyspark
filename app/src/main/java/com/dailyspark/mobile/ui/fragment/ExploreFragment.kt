@@ -2,12 +2,11 @@ package com.dailyspark.mobile.ui.fragment
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -16,7 +15,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ConcatAdapter
-import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.AddFolderAdapter
@@ -28,9 +26,9 @@ import com.dailyspark.mobile.repository.QuoteRepository
 import com.dailyspark.mobile.service.ApiService
 import com.dailyspark.mobile.ui.activity.CategoriesItemActivity
 import com.dailyspark.mobile.ui.activity.QuotesViewActivity
+import com.dailyspark.mobile.ui.dialog.AddCategoryBottomSheet
 import com.dailyspark.mobile.viewmodel.QuoteUiState
 import com.dailyspark.mobile.viewmodel.QuoteViewModel
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -185,27 +183,28 @@ class ExploreFragment : Fragment() {
     }
 
     private fun showAddFolderDialog() {
-        if (folderAdapter.itemCount >= 5) {
-            Toast.makeText(requireContext(), "You can only have 5 folders", Toast.LENGTH_SHORT)
-                .show()
+
+        val currentFolders = folderAdapter.itemCount
+        val maxFolders = 10
+
+        if (currentFolders >= maxFolders) {
+            Toast.makeText(
+                requireContext(),
+                "Maximum $maxFolders categories allowed",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
-        val editText = EditText(requireContext()).apply {
-            hint = "Folder name"
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-            setPadding(48, 24, 48, 24)
-        }
-
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("New Folder")
-            .setView(editText)
-            .setPositiveButton("Create") { _, _ ->
-                val name = editText.text.toString().trim()
-                if (name.isNotEmpty()) viewModel.addNewFolder(name)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        AddCategoryBottomSheet(
+            currentCount = currentFolders,
+            maxCount = maxFolders
+        ) { folderName ->
+            viewModel.addNewFolder(folderName)
+        }.show(
+            childFragmentManager,
+            "AddCategoryBottomSheet"
+        )
     }
 
     private fun setupSearch() {
@@ -242,11 +241,17 @@ class ExploreFragment : Fragment() {
     }
 
     private fun updateCategorySelectionUI(selectedCategory: String) {
+        val selectedTextColor = ContextCompat.getColor(requireContext(), R.color.selected)
+        val normalTextColor = ContextCompat.getColor(requireContext(), R.color.text_primary)
+
         categoryViews.forEach { (name, view) ->
-            view.setBackgroundResource(
-                if (name == selectedCategory) R.drawable.bg_category_selected
-                else R.drawable.bg_category_normal
-            )
+            if (name == selectedCategory) {
+                view.setBackgroundResource(R.drawable.bg_categories_cap)
+                view.setTextColor(selectedTextColor)
+            } else {
+                view.setBackgroundResource(R.drawable.bg_card)
+                view.setTextColor(normalTextColor)
+            }
         }
     }
 

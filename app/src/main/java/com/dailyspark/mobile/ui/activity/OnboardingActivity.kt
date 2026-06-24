@@ -15,7 +15,7 @@ import com.dailyspark.mobile.adapter.OnboardingAdapter
 import com.dailyspark.mobile.databinding.ActivityOnboardingBinding
 import com.dailyspark.mobile.model.OnboardingItem
 
-class OnboardingActivity : AppCompatActivity() {
+class OnboardingActivity : BaseActivity() {
     private lateinit var binding: ActivityOnboardingBinding
     private val onboardingAdapter = OnboardingAdapter()
     private lateinit var items: List<OnboardingItem>

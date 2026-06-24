@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tvCategory"
@@ -33,9 +33,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:fontFamily="serif"
             android:text="Success is not final..."
-            android:textColor="#212121"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
             android:textSize="18sp" />
 
 
@@ -50,8 +50,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Winston Churchill"
-                android:textColor="#616161"
-                android:textSize="14sp"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
             <androidx.appcompat.widget.AppCompatImageView
@@ -59,6 +59,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_marginEnd="15dp"
+                android:tint="@color/text_muted"
                 android:src="@drawable/copy" />
 
             <androidx.appcompat.widget.AppCompatImageView
@@ -72,6 +73,7 @@
                 android:id="@+id/share_quote"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
+                android:tint="@color/text_muted"
                 android:src="@drawable/share" />
 
         </LinearLayout>

@@ -47,11 +47,11 @@
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:layout_alignParentEnd="true"
-                android:visibility="gone"
                 android:layout_centerVertical="true"
                 android:background="@drawable/bg_action_btn"
                 android:padding="10dp"
-                android:src="@drawable/notification" />
+                android:src="@drawable/notification"
+                android:visibility="gone" />
 
         </RelativeLayout>
 
@@ -75,64 +75,84 @@
                     android:layout_marginTop="24dp"
                     android:background="@drawable/quote_card_gradient"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    >
+
 
                     <RelativeLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content">
 
-                        <LinearLayout
-                            android:id="@+id/layoutBadge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:background="@drawable/bg_badge"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingStart="10dp"
-                            android:paddingTop="6dp"
-                            android:paddingEnd="14dp"
-                            android:paddingBottom="6dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="🔥"
-                                android:textColor="#C97A10"
-                                android:textSize="13sp" />
-
-                            <TextView
-                                android:id="@+id/tvCategory"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="4dp"
-                                android:letterSpacing="0.1"
-                                android:text="HAPPINESS"
-                                android:textColor="#C97A10"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-
-                        </LinearLayout>
-
                         <androidx.appcompat.widget.AppCompatImageView
-                            android:id="@+id/btnShare"
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:padding="8dp"
-                            android:src="@drawable/share"
-                            app:tint="#AAAAAA" />
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/quotes"
+                            android:layout_marginStart="10dp"
+                            android:tint="#D9B24C"
+                            android:alpha="0.2" />
 
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="25dp"
+                            android:layout_marginHorizontal="20dp">
+
+                            <LinearLayout
+                                android:id="@+id/layoutBadge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerVertical="true"
+                                android:background="@drawable/bg_badge"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="10dp"
+                                android:paddingTop="6dp"
+                                android:paddingEnd="14dp"
+                                android:paddingBottom="6dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="🔥"
+                                    android:textColor="#C97A10"
+                                    android:textSize="13sp" />
+
+                                <TextView
+                                    android:id="@+id/tvCategory"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="4dp"
+                                    android:letterSpacing="0.1"
+                                    android:text="HAPPINESS"
+                                    android:textColor="#C97A10"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+
+                            </LinearLayout>
+
+                            <androidx.appcompat.widget.AppCompatImageView
+                                android:id="@+id/btnShare"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
+                                android:padding="8dp"
+                                android:src="@drawable/share"
+                                app:tint="#AAAAAA" />
+
+
+                        </RelativeLayout>
 
                     </RelativeLayout>
+
 
                     <androidx.appcompat.widget.AppCompatTextView
                         android:id="@+id/tvQuote"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="18dp"
+                        android:paddingHorizontal="20dp"
                         android:lineSpacingExtra="4dp"
+                        android:layout_marginTop="18sp"
                         android:text="&quot;Happiness is built on an inner baseline that completely bypasses standard complaints.&quot;"
                         android:textColor="@color/text_primary"
                         android:textSize="20sp"
@@ -144,6 +164,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
+                        android:paddingHorizontal="20dp"
                         android:text="— Unknown"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp" />
@@ -151,19 +172,22 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginTop="21dp"
+                        android:paddingBottom="20dp"
+                        android:paddingHorizontal="20dp"
                         android:gravity="center"
                         android:orientation="horizontal">
 
                         <LinearLayout
                             android:id="@+id/btnLike"
                             android:layout_width="0dp"
-                            android:layout_height="35dp"
-                            android:layout_marginEnd="10dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="4dp"
                             android:layout_weight="1"
                             android:background="@drawable/bg_action_btn"
                             android:gravity="center"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:padding="10dp">
 
                             <ImageView
                                 android:id="@+id/ivLike"
@@ -188,12 +212,13 @@
                         <LinearLayout
                             android:id="@+id/btnCopy"
                             android:layout_width="0dp"
-                            android:layout_height="35dp"
-                            android:layout_marginHorizontal="10dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="4dp"
                             android:layout_weight="1"
                             android:background="@drawable/bg_action_btn"
                             android:gravity="center"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:padding="10dp">
 
                             <ImageView
                                 android:id="@+id/ivCopy"
@@ -201,7 +226,7 @@
                                 android:layout_height="18dp"
                                 android:contentDescription="Copy"
                                 android:src="@drawable/copy"
-                                app:tint="#AAAAAA"/>
+                                app:tint="#AAAAAA" />
 
                             <TextView
                                 android:id="@+id/tvCopy"
@@ -218,12 +243,13 @@
                         <LinearLayout
                             android:id="@+id/btnNext"
                             android:layout_width="0dp"
-                            android:layout_height="35dp"
-                            android:layout_marginStart="10dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
                             android:layout_weight="1"
                             android:background="@drawable/bg_action_btn"
                             android:gravity="center"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:padding="10dp">
 
                             <androidx.appcompat.widget.AppCompatImageView
                                 android:id="@+id/ivNext"
@@ -255,6 +281,7 @@
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
+
                 <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -270,7 +297,7 @@
 
                         <LinearLayout
                             android:id="@+id/catAll"
-                            android:layout_width="64dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="18dp"
                             android:layout_marginEnd="12dp"
@@ -281,14 +308,14 @@
                                 android:id="@+id/catAll_frame"
                                 android:layout_width="56dp"
                                 android:layout_height="56dp"
-                                android:background="@drawable/bg_category_selected">
+                                android:background="@drawable/bg_category_normal">
 
                                 <TextView
-                                    android:layout_width="36dp"
-                                    android:layout_height="38dp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:text="🔥"
-                                    android:textSize="26sp" />
+                                    android:textSize="24sp" />
                             </FrameLayout>
 
                             <TextView
@@ -303,7 +330,7 @@
 
                         <LinearLayout
                             android:id="@+id/catMotivational"
-                            android:layout_width="80dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
                             android:gravity="center"
@@ -315,15 +342,15 @@
                                 android:layout_height="56dp"
                                 android:background="@drawable/bg_category_normal">
 
-                                <TextView
+                                <androidx.appcompat.widget.AppCompatTextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:text="💪"
-                                    android:textSize="26sp" />
+                                    android:textSize="24sp" />
                             </FrameLayout>
 
-                            <TextView
+                            <androidx.appcompat.widget.AppCompatTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
@@ -335,7 +362,7 @@
 
                         <LinearLayout
                             android:id="@+id/catLove"
-                            android:layout_width="64dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
                             android:gravity="center"
@@ -352,7 +379,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:text="❤️"
-                                    android:textSize="26sp" />
+                                    android:textSize="24sp" />
                             </FrameLayout>
 
                             <TextView
@@ -366,7 +393,7 @@
 
                         <LinearLayout
                             android:id="@+id/catWisdom"
-                            android:layout_width="64dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
                             android:gravity="center"
@@ -383,7 +410,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:text="🧠"
-                                    android:textSize="26sp" />
+                                    android:textSize="24sp" />
                             </FrameLayout>
 
                             <TextView
@@ -397,7 +424,7 @@
 
                         <LinearLayout
                             android:id="@+id/catFriendship"
-                            android:layout_width="72dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
                             android:gravity="center"
@@ -414,7 +441,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:text="🤝"
-                                    android:textSize="26sp" />
+                                    android:textSize="24sp" />
                             </FrameLayout>
 
                             <TextView
@@ -429,7 +456,7 @@
 
                         <LinearLayout
                             android:id="@+id/catFunny"
-                            android:layout_width="72dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
                             android:gravity="center"
@@ -446,7 +473,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:text="😂"
-                                    android:textSize="26sp" />
+                                    android:textSize="24sp" />
                             </FrameLayout>
 
                             <TextView
@@ -461,7 +488,7 @@
 
                         <LinearLayout
                             android:id="@+id/catLife"
-                            android:layout_width="72dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
                             android:gravity="center"
@@ -478,7 +505,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:text="🌿"
-                                    android:textSize="26sp" />
+                                    android:textSize="24sp" />
                             </FrameLayout>
 
                             <TextView
@@ -493,7 +520,7 @@
 
                         <LinearLayout
                             android:id="@+id/catSuccess"
-                            android:layout_width="72dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
                             android:gravity="center"
@@ -510,7 +537,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:text="💼"
-                                    android:textSize="26sp" />
+                                    android:textSize="24sp" />
                             </FrameLayout>
 
                             <TextView
@@ -525,7 +552,7 @@
 
                         <LinearLayout
                             android:id="@+id/catHappiness"
-                            android:layout_width="72dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="12dp"
                             android:gravity="center"
@@ -542,7 +569,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:text="😊"
-                                    android:textSize="26sp" />
+                                    android:textSize="24sp" />
                             </FrameLayout>
 
                             <TextView
@@ -590,7 +617,7 @@
                         <FrameLayout
                             android:layout_width="56dp"
                             android:layout_height="56dp"
-                            android:background="@drawable/bg_category_selected">
+                            android:background="@drawable/bg_steak_icon_card">
 
                             <TextView
                                 android:layout_width="wrap_content"

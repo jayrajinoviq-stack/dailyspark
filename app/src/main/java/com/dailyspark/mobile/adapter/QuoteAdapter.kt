@@ -84,9 +84,26 @@ class QuoteAdapter(
         }
 
         fun updateFavouriteUI(isFavourite: Boolean) {
-            binding.saveFavourite.setImageResource(
-                if (isFavourite) R.drawable.heart_selected else R.drawable.heart
-            )
+
+            if (isFavourite) {
+                binding.saveFavourite.setImageResource(R.drawable.heart_selected)
+                binding.saveFavourite.imageTintList = null
+            } else {
+                binding.saveFavourite.setImageResource(R.drawable.heart)
+
+                val isDark = binding.root.context.resources.configuration.uiMode and
+                        android.content.res.Configuration.UI_MODE_NIGHT_MASK ==
+                        android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+                val tintColor = if (isDark) {
+                    Color.parseColor("#777770")
+                } else {
+                    Color.parseColor("#777770")
+                }
+
+                binding.saveFavourite.imageTintList =
+                    ColorStateList.valueOf(tintColor)
+            }
         }
     }
 
