@@ -2,8 +2,6 @@ package com.dailyspark.mobile.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -27,14 +25,17 @@ class SplashActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-            binding = ActivitySplashBinding.inflate(layoutInflater)
+        binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
         ThemeManager.applyTheme(this)
+
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
 
         val database = Room.databaseBuilder(
             applicationContext, AppDatabase::class.java,
@@ -57,11 +58,25 @@ class SplashActivity : BaseActivity() {
             val prefs = getSharedPreferences("onboarding", MODE_PRIVATE)
             val isFinished = prefs.getBoolean("finished", false)
 
-            val destination =
-                if (isFinished) MainActivity::class.java else OnboardingActivity::class.java
-
-            startActivity(Intent(this@SplashActivity, destination))
-            finish()
+            if (!isFinished) {
+                startActivity(
+                    Intent(
+                        this@SplashActivity,
+                        OnboardingActivity::class.java
+                    )
+                )
+                finish()
+            } else {
+                AdsManager.showAppOpen(this@SplashActivity) {
+                    startActivity(
+                        Intent(
+                            this@SplashActivity,
+                            MainActivity::class.java
+                        )
+                    )
+                    finish()
+                }
+            }
         }
     }
 

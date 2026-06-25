@@ -1,11 +1,14 @@
 package com.dailyspark.mobile.ui.activity
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.PopupMenu
+import android.widget.PopupWindow
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
@@ -17,10 +20,11 @@ import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.FolderQuoteAdapter
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.ActivityCategoriesItemBinding
-import com.dailyspark.mobile.databinding.DialogAddEditQuoteBinding
+import com.dailyspark.mobile.databinding.PopupMenuBinding
 import com.dailyspark.mobile.model.FolderQuoteEntity
 import com.dailyspark.mobile.repository.QuoteRepository
 import com.dailyspark.mobile.service.ApiService
+import com.dailyspark.mobile.ui.dialog.AddQuoteBottomSheet
 import com.dailyspark.mobile.viewmodel.FolderItemEvent
 import com.dailyspark.mobile.viewmodel.FolderItemViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -72,8 +76,11 @@ class CategoriesItemActivity : BaseActivity() {
             insets
         }
 
+
         folderId = intent.getIntExtra(EXTRA_FOLDER_ID, -1)
         folderName = intent.getStringExtra(EXTRA_FOLDER_NAME) ?: "Item"
+
+        binding.appCompatTextView.text = folderName
 
         if (folderId == -1) {
             finish()
@@ -113,7 +120,9 @@ class CategoriesItemActivity : BaseActivity() {
     private fun setupClickListeners() {
         binding.back.setOnClickListener { finish() }
 
-        binding.menu.setOnClickListener { confirmDeleteFolder() }
+        binding.menu.setOnClickListener {
+            showCategoryMenu()
+        }
 
         binding.addItems.setOnClickListener {
             val currentCount = viewModel.quotes.value?.size ?: 0
@@ -129,8 +138,42 @@ class CategoriesItemActivity : BaseActivity() {
         }
     }
 
+    private fun showCategoryMenu() {
+
+        val popupBinding = PopupMenuBinding.inflate(layoutInflater)
+
+        val popupWindow = PopupWindow(
+            popupBinding.root,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        )
+
+        popupWindow.elevation = 16f
+        popupWindow.isOutsideTouchable = true
+        popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        popupBinding.deleteCategory.setOnClickListener {
+            popupWindow.dismiss()
+            viewModel.deleteFolder()
+        }
+
+        popupBinding.root.measure(
+            View.MeasureSpec.UNSPECIFIED,
+            View.MeasureSpec.UNSPECIFIED
+        )
+
+        val popupWidth = popupBinding.root.measuredWidth
+
+        popupWindow.showAsDropDown(
+            binding.menu,
+            -popupWidth + binding.menu.width,
+            8
+        )
+    }
+
     private fun observeQuotes() {
-        val launch = lifecycleScope.launch {
+        lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.quotes.collect { list ->
                     adapter.submitList(list)
@@ -140,8 +183,13 @@ class CategoriesItemActivity : BaseActivity() {
                     binding.quotesProgress.setProgressCompat(count, true)
                     binding.totalQuotes.text = "$count/$MAX_ITEMS quotes"
 
-//                  binding.tvEmptyState.visibility = if (count == 0) View.VISIBLE else View.GONE
-                    binding.rvMyCategories.visibility = if (count == 0) View.GONE else View.VISIBLE
+                    if (count == 0) {
+                        binding.rvMyCategories.visibility = View.GONE
+                        binding.layoutEmpty.visibility = View.VISIBLE
+                    } else {
+                        binding.rvMyCategories.visibility = View.VISIBLE
+                        binding.layoutEmpty.visibility = View.GONE
+                    }
 
                     binding.addItems.isEnabled = count < MAX_ITEMS
                     binding.addItems.alpha = if (count < MAX_ITEMS) 1f else 0.5f
@@ -171,30 +219,20 @@ class CategoriesItemActivity : BaseActivity() {
     }
 
     private fun showAddEditDialog(existing: FolderQuoteEntity?) {
-        val dialogBinding = DialogAddEditQuoteBinding.inflate(LayoutInflater.from(this))
+        val currentCount = viewModel.quotes.value?.size ?: 0
 
-        existing?.let {
-            dialogBinding.etQuote.setText(it.quote)
-            dialogBinding.etAuthor.setText(it.author)
-            dialogBinding.etCategory.setText(it.category)
-        }
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle(if (existing == null) "Add Quote" else "Edit Quote")
-            .setView(dialogBinding.root)
-            .setPositiveButton(if (existing == null) "Add" else "Save") { _, _ ->
-                val quoteText = dialogBinding.etQuote.text.toString().trim()
-                val author = dialogBinding.etAuthor.text.toString().trim()
-                val category = dialogBinding.etCategory.text.toString().trim()
-
-                if (existing == null) {
-                    viewModel.addQuote(quoteText, author, category)
-                } else {
-                    viewModel.updateQuote(existing, quoteText, author, category)
-                }
+        AddQuoteBottomSheet(
+            folderName = folderName,
+            currentCount = currentCount,
+            maxCount = MAX_ITEMS,
+            existing = existing
+        ) { quoteText, author, category ->
+            if (existing == null) {
+                viewModel.addQuote(quoteText, author, category)
+            } else {
+                viewModel.updateQuote(existing, quoteText, author, category)
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }.show(supportFragmentManager, "AddQuoteBottomSheet")
     }
 
     private fun confirmDeleteQuote(quote: FolderQuoteEntity) {

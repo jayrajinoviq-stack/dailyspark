@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.dailyspark.mobile" />
+                  <option name="mobileSdkAppId" value="1:541187187573:android:33ca4b659a9e4a9c1b693c" />
+                  <option name="projectId" value="dailyspark-1f071" />
+                  <option name="projectNumber" value="541187187573" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

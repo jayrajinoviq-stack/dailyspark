@@ -34,6 +34,8 @@ import com.dailyspark.mobile.service.ApiService
 import com.dailyspark.mobile.ui.activity.QuotesViewActivity
 import com.dailyspark.mobile.utils.ShareHelper
 import com.dailyspark.mobile.viewmodel.HomeViewModel
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -111,6 +113,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
             binding.tvCopy.text = "Copied!"
             binding.ivCopy.setImageResource(R.drawable.check)
+
 
             viewLifecycleOwner.lifecycleScope.launch {
                 delay(1500)

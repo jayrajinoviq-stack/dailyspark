@@ -177,13 +177,13 @@ class SavedFragment : Fragment() {
                         }
                         is QuoteUiState.Success -> {
                             binding.rvFavourites.visibility = View.VISIBLE
-                            binding.tvEmpty.visibility = View.GONE
+                            binding.layoutEmpty.visibility = View.GONE
                             adapter.submitList(state.quotes)
                             binding.totalFavItems.text = "${state.quotes.size} Saved Quotes"
                         }
                         is QuoteUiState.Empty -> {
                             binding.rvFavourites.visibility = View.GONE
-                            binding.tvEmpty.visibility = View.VISIBLE
+                            binding.layoutEmpty.visibility = View.VISIBLE
                             adapter.submitList(emptyList())
                             binding.totalFavItems.text = "0 Saved Quotes"
                         }

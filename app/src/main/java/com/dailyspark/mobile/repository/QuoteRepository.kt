@@ -24,6 +24,7 @@ class QuoteRepository(
     val allQuotes: Flow<List<QuoteEntity>> = dao.getAllQuotes()
     val favouriteQuotes: Flow<List<QuoteEntity>> = dao.getFavouriteQuotes()
 
+    private var shuffledIds: List<Int> = emptyList()
     fun getFilteredQuotes(query: String, category: String): Flow<List<QuoteEntity>> {
         val q = query.trim()
         return when {

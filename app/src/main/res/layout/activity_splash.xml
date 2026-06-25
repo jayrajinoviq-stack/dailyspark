@@ -8,17 +8,56 @@
     android:background="@color/background"
     tools:context=".ui.activity.SplashActivity">
 
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/quote_icon"
+        android:layout_width="106dp"
+        android:layout_height="106dp"
+        android:layout_gravity="center"
+        android:background="@drawable/circle_quote_bg"
+        android:padding="26dp"
+        android:src="@drawable/quotes"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/accent" />
+
+
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/app_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:text="@string/daily_spark"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:textColor="@color/text_primary"
+        android:textSize="24sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/quote_icon" />
 
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/subtitle_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="@string/inspiration_for_every_day"
+        android:textColor="@color/text_muted"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/app_text" />
+
+    <ProgressBar
+        android:id="@+id/loading_spinner"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_marginTop="28dp"
+        android:indeterminateTint="@color/accent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/subtitle_text" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

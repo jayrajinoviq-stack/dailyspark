@@ -74,8 +74,7 @@
                     android:layout_marginHorizontal="18dp"
                     android:layout_marginTop="24dp"
                     android:background="@drawable/quote_card_gradient"
-                    android:orientation="vertical"
-                    >
+                    android:orientation="vertical">
 
 
                     <RelativeLayout
@@ -191,8 +190,8 @@
 
                             <ImageView
                                 android:id="@+id/ivLike"
-                                android:layout_width="18dp"
-                                android:layout_height="18dp"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
                                 android:contentDescription="Like"
                                 android:src="@drawable/heart"
                                 app:tint="#AAAAAA" />
@@ -204,7 +203,7 @@
                                 android:layout_marginStart="6dp"
                                 android:text="Like"
                                 android:textColor="#AAAAAA"
-                                android:textSize="14sp" />
+                                android:textSize="12sp" />
 
                         </LinearLayout>
 
@@ -222,8 +221,8 @@
 
                             <ImageView
                                 android:id="@+id/ivCopy"
-                                android:layout_width="18dp"
-                                android:layout_height="18dp"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
                                 android:contentDescription="Copy"
                                 android:src="@drawable/copy"
                                 app:tint="#AAAAAA" />
@@ -235,7 +234,7 @@
                                 android:layout_marginStart="6dp"
                                 android:text="Copy"
                                 android:textColor="#AAAAAA"
-                                android:textSize="14sp" />
+                                android:textSize="12sp" />
 
                         </LinearLayout>
 
@@ -253,8 +252,8 @@
 
                             <androidx.appcompat.widget.AppCompatImageView
                                 android:id="@+id/ivNext"
-                                android:layout_width="18dp"
-                                android:layout_height="18dp"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
                                 android:contentDescription="Next"
                                 android:src="@drawable/refresh"
                                 app:tint="#AAAAAA" />
@@ -266,7 +265,8 @@
                                 android:layout_marginStart="6dp"
                                 android:text="Next"
                                 android:textColor="#AAAAAA"
-                                android:textSize="14sp" />
+                                android:textSize="12sp" />
+
                         </LinearLayout>
                     </LinearLayout>
 

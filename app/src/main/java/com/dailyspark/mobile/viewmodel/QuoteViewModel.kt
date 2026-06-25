@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -41,15 +40,44 @@ class QuoteViewModel(private val repository: QuoteRepository) : ViewModel() {
 
     val currentCategory: StateFlow<String> = _category.asStateFlow()
 
+    private var cachedAllQuotes: List<QuoteEntity> = emptyList()
+
     val uiState: StateFlow<QuoteUiState> =
         combine(_searchQuery, _category) { q, c -> q to c }
-            .flatMapLatest { (q, c) -> repository.getFilteredQuotes(q, c) }
-            .map { if (it.isEmpty()) QuoteUiState.Empty else QuoteUiState.Success(it) }
+            .flatMapLatest { (q, c) ->
+                repository.getFilteredQuotes(q, c)
+            }
+            .map { quotes ->
+
+                val finalQuotes = when {
+                    _category.value == "All" && _searchQuery.value.isBlank() -> {
+
+                        if (cachedAllQuotes.isEmpty() ||
+                            cachedAllQuotes.size != quotes.size
+                        ) {
+                            cachedAllQuotes = quotes.shuffled()
+                        }
+
+                        cachedAllQuotes
+                    }
+
+                    else -> quotes
+                }
+
+                if (finalQuotes.isEmpty()) {
+                    QuoteUiState.Empty
+                } else {
+                    QuoteUiState.Success(finalQuotes)
+                }
+            }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = QuoteUiState.Loading
             )
+
+
+
 
     val favouriteUiState: StateFlow<QuoteUiState> =
         repository.favouriteQuotes
@@ -62,8 +90,21 @@ class QuoteViewModel(private val repository: QuoteRepository) : ViewModel() {
 
     val folders: Flow<List<FolderWithCount>> = repository.folders
 
-    fun onSearchQueryChanged(query: String) { _searchQuery.value = query }
-    fun onCategoryChanged(category: String) { _category.value = category }
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
+    }
+
+
+    fun onCategoryChanged(category: String) {
+
+        if (category == "All" &&
+            _category.value != "All"
+        ) {
+            cachedAllQuotes = emptyList()
+        }
+
+        _category.value = category
+    }
 
     fun toggleFavourite(id: Int) {
         viewModelScope.launch { repository.toggleFavourite(id) }
@@ -97,7 +138,6 @@ class QuoteViewModel(private val repository: QuoteRepository) : ViewModel() {
     fun setQuoteIds(ids: List<Int>) {
         _quoteIds.value = ids
     }
-
 
 
     fun deleteFolder(folderId: Int) {

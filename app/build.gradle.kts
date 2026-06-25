@@ -5,6 +5,8 @@ import java.util.Locale
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
@@ -16,7 +18,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0_test"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -112,5 +114,13 @@ dependencies {
 
     implementation("com.github.bumptech.glide:glide:5.0.5")
     implementation("com.tbuonomo:dotsindicator:5.0")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
 
+    implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
+
+    implementation("com.google.firebase:firebase-analytics")
+
+    implementation("com.google.firebase:firebase-crashlytics")
+
+    implementation("com.google.android.gms:play-services-ads:25.4.0")
 }

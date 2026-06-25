@@ -1,12 +1,12 @@
 package com.dailyspark.mobile.ui.activity
 
+import AdsManager
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.widget.RelativeLayout
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.viewpager2.widget.ViewPager2
@@ -26,6 +26,8 @@ class OnboardingActivity : BaseActivity() {
         binding = ActivityOnboardingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        AdsManager.loadAppOpen(this)
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.btnContinue) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val params = v.layoutParams as RelativeLayout.LayoutParams
@@ -35,9 +37,24 @@ class OnboardingActivity : BaseActivity() {
         }
 
         items = listOf(
-            OnboardingItem(1, "Daily Motivation", "Start every day with powerful quotes that inspire action.", R.drawable.onboarding_1),
-            OnboardingItem(2, "Save Favorites", "Keep your favorite quotes and revisit them whenever you need.", R.drawable.onboarding_2),
-            OnboardingItem(3, "Build Consistency", "Maintain your daily streak and watch motivation become a habit.", R.drawable.onboarding_3)
+            OnboardingItem(
+                1,
+                "Daily Motivation",
+                "Start every day with powerful quotes that inspire action.",
+                R.drawable.onboarding_1
+            ),
+            OnboardingItem(
+                2,
+                "Save Favorites",
+                "Keep your favorite quotes and revisit them whenever you need.",
+                R.drawable.onboarding_2
+            ),
+            OnboardingItem(
+                3,
+                "Build Consistency",
+                "Maintain your daily streak and watch motivation become a habit.",
+                R.drawable.onboarding_3
+            )
         )
 
         setupViewPager()
@@ -115,8 +132,11 @@ class OnboardingActivity : BaseActivity() {
     }
 
     private fun finishOnboarding() {
-        getSharedPreferences("onboarding", MODE_PRIVATE).edit().putBoolean("finished", true).apply()
-        startActivity(Intent(this, MainActivity::class.java))
-        finish()
+        AdsManager.showAppOpen(this@OnboardingActivity) {
+            getSharedPreferences("onboarding", MODE_PRIVATE).edit().putBoolean("finished", true)
+                .apply()
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+        }
     }
 }

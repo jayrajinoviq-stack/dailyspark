@@ -200,8 +200,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="16dp"
                 android:text="@string/my_categories"
+                android:textSize="16dp"
                 android:textStyle="bold" />
 
             <androidx.appcompat.widget.AppCompatImageView
@@ -210,8 +210,8 @@
                 android:layout_height="26dp"
                 android:background="@drawable/add_icon_bg"
                 android:padding="8dp"
-                android:tint="@color/accent"
-                android:src="@drawable/add" />
+                android:src="@drawable/add"
+                android:tint="@color/accent" />
 
         </LinearLayout>
 
