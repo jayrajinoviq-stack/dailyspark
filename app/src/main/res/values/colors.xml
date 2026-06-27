@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <color name="shimmer_placeholder">#E0E0E0</color>
+
+    <color name="shimmer_base_color">#E0E0E0</color>
+    <color name="shimmer_highlight_color">#FFFFFF</color>
+
     <!-- #0D0D0D -->
     <color name="app_bg">#0D0D0D</color>
 
@@ -23,6 +28,7 @@
 
     <color name="text_primary">#1A1A1A</color>
     <color name="text_muted">#777770</color>
+    <color name="icon_tint">#AAAAAA</color>
 
     <color name="border">#14000000</color>
 

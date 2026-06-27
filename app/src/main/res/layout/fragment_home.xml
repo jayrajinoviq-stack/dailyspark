@@ -55,7 +55,7 @@
 
         </RelativeLayout>
 
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="10dp"
@@ -65,7 +65,41 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:animateLayoutChanges="true"
                 android:orientation="vertical">
+
+
+
+                <LinearLayout
+                    android:id="@+id/layoutRetry"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="48dp"
+                    android:layout_marginHorizontal="18dp"
+                    android:visibility="gone"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="No Internet Connection"
+                        android:textColor="@color/text_primary"
+                        android:textSize="20sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRetry"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:backgroundTint="@color/accent"
+                        android:text="Retry"
+                        android:textColor="@color/app_text" />
+
+                </LinearLayout>
+
 
                 <LinearLayout
                     android:id="@+id/cardQuote"
@@ -84,17 +118,17 @@
                         <androidx.appcompat.widget.AppCompatImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/quotes"
                             android:layout_marginStart="10dp"
-                            android:tint="#D9B24C"
-                            android:alpha="0.2" />
+                            android:alpha="0.2"
+                            android:src="@drawable/quotes"
+                            android:tint="#D9B24C" />
 
 
                         <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="25dp"
-                            android:layout_marginHorizontal="20dp">
+                            android:layout_marginHorizontal="20dp"
+                            android:layout_marginTop="25dp">
 
                             <LinearLayout
                                 android:id="@+id/layoutBadge"
@@ -149,9 +183,9 @@
                         android:id="@+id/tvQuote"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingHorizontal="20dp"
-                        android:lineSpacingExtra="4dp"
                         android:layout_marginTop="18sp"
+                        android:lineSpacingExtra="4dp"
+                        android:paddingHorizontal="20dp"
                         android:text="&quot;Happiness is built on an inner baseline that completely bypasses standard complaints.&quot;"
                         android:textColor="@color/text_primary"
                         android:textSize="20sp"
@@ -172,10 +206,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="21dp"
-                        android:paddingBottom="20dp"
-                        android:paddingHorizontal="20dp"
                         android:gravity="center"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp"
+                        android:paddingBottom="20dp">
 
                         <LinearLayout
                             android:id="@+id/btnLike"
@@ -188,7 +222,7 @@
                             android:orientation="horizontal"
                             android:padding="10dp">
 
-                            <ImageView
+                            <androidx.appcompat.widget.AppCompatImageView
                                 android:id="@+id/ivLike"
                                 android:layout_width="16dp"
                                 android:layout_height="16dp"
@@ -196,7 +230,7 @@
                                 android:src="@drawable/heart"
                                 app:tint="#AAAAAA" />
 
-                            <TextView
+                            <androidx.appcompat.widget.AppCompatTextView
                                 android:id="@+id/tvLike"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -270,7 +304,29 @@
                         </LinearLayout>
                     </LinearLayout>
 
+
+
                 </LinearLayout>
+
+
+                <FrameLayout
+                    android:id="@+id/nativeAdFrame"
+                    android:layout_marginTop="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="100dp"
+                    android:visibility="gone"
+                    android:indeterminateTint="@color/accent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/subtitle_text" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -708,7 +764,7 @@
 
             </LinearLayout>
 
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
 
     </LinearLayout>
 

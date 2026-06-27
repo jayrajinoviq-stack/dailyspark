@@ -4,13 +4,18 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dailyspark.mobile.NetworkMonitor
 import com.dailyspark.mobile.model.QuoteEntity
 import com.dailyspark.mobile.repository.QuoteRepository
 import com.dailyspark.mobile.repository.StreakRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -21,7 +26,8 @@ import java.time.temporal.TemporalAdjusters
 
 class HomeViewModel(
     private val streakRepository: StreakRepository,
-    private val quoteRepository: QuoteRepository
+    private val quoteRepository: QuoteRepository,
+    private val networkMonitor: NetworkMonitor
 ) : ViewModel() {
 
     data class UiState(
@@ -44,13 +50,54 @@ class HomeViewModel(
         object Normal    : DayStatus()
     }
 
+
+    sealed class SyncStatus {
+        object Idle : SyncStatus()
+        object Loading : SyncStatus()
+        object Success : SyncStatus()
+        object NoInternet : SyncStatus()
+        object Error : SyncStatus()
+    }
+
+
+    private val _syncStatus = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
+    val syncStatus: StateFlow<SyncStatus> = _syncStatus.asStateFlow()
+
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     private val quoteCache = mutableMapOf<String, List<QuoteEntity>>()
 
+
+
+
+
     init {
+        performSync()
         loadQuotesForCategory("All")
+    }
+
+    private val _toastEvent = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val toastEvent = _toastEvent.asSharedFlow()
+
+    fun performSync(isRetry: Boolean = false) {
+        viewModelScope.launch {
+            _syncStatus.value = SyncStatus.Loading
+
+            if (!networkMonitor.isConnected()) {
+                _syncStatus.value = SyncStatus.NoInternet
+                _toastEvent.emit("No Internet Connection")
+                return@launch
+            }
+
+            val result = quoteRepository.syncDataIfNeeded(forceRefresh = isRetry)
+
+            if (result.isSuccess) {
+                _syncStatus.value = SyncStatus.Success
+            } else {
+                _syncStatus.value = SyncStatus.Error
+            }
+        }
     }
 
     fun setCategory(category: String) {
@@ -80,11 +127,6 @@ class HomeViewModel(
         }
     }
 
-//    fun toggleFavourite(id: Int) {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            quoteRepository.toggleFavourite(id)
-//        }
-//    }
 
     fun toggleFavourite(id: Int) {
         val current = _uiState.value.currentQuote ?: return
@@ -139,25 +181,29 @@ class HomeViewModel(
     }
 
 
+    private var loadJob: Job? = null
+
     private fun loadQuotesForCategory(category: String) {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             quoteRepository.getFilteredQuotes("", category)
-                .collect { quotes ->
-                    if (quotes.isEmpty()) return@collect
-
-                    quoteCache[category] = quotes
-
-                    if (_uiState.value.selectedCategory == category) {
+                .combine(syncStatus) { quotes, sync -> quotes to sync }
+                .collect { (quotes, sync) ->
+                    if (quotes.isNotEmpty()) {
+                        quoteCache[category] = quotes
                         _uiState.update { state ->
+                            if (state.selectedCategory != category) return@update state
                             val updatedCurrentQuote = quotes.find { it.id == state.currentQuote?.id }
                                 ?: quotes.random()
-
                             state.copy(
                                 currentQuote = updatedCurrentQuote,
                                 categoryQuotes = quotes,
                                 isLoading = false
                             )
                         }
+                    } else {
+                        val stillWaiting = sync is SyncStatus.Loading || sync is SyncStatus.Idle
+                        _uiState.update { it.copy(isLoading = stillWaiting) }
                     }
                 }
         }

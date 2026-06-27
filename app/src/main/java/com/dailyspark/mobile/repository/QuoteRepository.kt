@@ -48,12 +48,13 @@ class QuoteRepository(
         dao.toggleFavourite(id)
     }
 
-    suspend fun syncDataIfNeeded() = withContext(Dispatchers.IO) {
+    suspend fun syncDataIfNeeded(forceRefresh: Boolean = false): Result<Unit> = withContext(Dispatchers.IO) {
         val lastSync = prefs.getLong("last_sync_time", 0L)
         val now = System.currentTimeMillis()
         val twentyFourHrs = 24 * 60 * 60 * 1000L
+        val dbCount = dao.getCount()
 
-        if (dao.getCount() == 0 || (now - lastSync > twentyFourHrs)) {
+        if (dbCount == 0 || (now - lastSync > twentyFourHrs) || forceRefresh) {
             try {
                 val response = api.fetchQuotes(
                     "sb_publishable_k46r574RPC5drOcnKYw0pA_vKvzJZW1",
@@ -63,11 +64,15 @@ class QuoteRepository(
                     dao.upsertQuotes(response)
                     prefs.edit().putLong("last_sync_time", now).apply()
                     Log.d("SYNC", "Synced ${response.size} quotes")
+                } else if (dbCount == 0) {
+                    return@withContext Result.failure(Exception("No data available"))
                 }
             } catch (e: Exception) {
-                Log.e("SYNC", "Network error: ${e.message}")
+                return@withContext Result.failure(e)
             }
         }
+        return@withContext Result.success(Unit)
+
     }
 
     val folders: Flow<List<FolderWithCount>> = dao.getFoldersWithCount()

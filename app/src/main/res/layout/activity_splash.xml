@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
+    android:gravity="center"
+    android:orientation="vertical"
     tools:context=".ui.activity.SplashActivity">
-
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/quote_icon"
@@ -17,12 +18,7 @@
         android:background="@drawable/circle_quote_bg"
         android:padding="26dp"
         android:src="@drawable/quotes"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/accent" />
-
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/app_text"
@@ -33,8 +29,6 @@
         android:textColor="@color/text_primary"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/quote_icon" />
 
     <androidx.appcompat.widget.AppCompatTextView
@@ -44,10 +38,7 @@
         android:layout_marginTop="6dp"
         android:text="@string/inspiration_for_every_day"
         android:textColor="@color/text_muted"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/app_text" />
+        android:textSize="14sp" />
 
     <ProgressBar
         android:id="@+id/loading_spinner"
@@ -55,9 +46,6 @@
         android:layout_width="22dp"
         android:layout_height="22dp"
         android:layout_marginTop="28dp"
-        android:indeterminateTint="@color/accent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/subtitle_text" />
+        android:indeterminateTint="@color/accent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

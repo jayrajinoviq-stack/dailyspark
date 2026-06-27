@@ -4,7 +4,6 @@ import android.app.WallpaperManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ContentValues
-import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -25,22 +24,24 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.dailyspark.mobile.NetworkMonitor
 import com.dailyspark.mobile.R
+import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.data.RetrofitClient
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.ActivityQuotesViewBinding
 import com.dailyspark.mobile.databinding.WallpaperLayoutBinding
 import com.dailyspark.mobile.model.QuoteEntity
 import com.dailyspark.mobile.repository.QuoteRepository
-import com.dailyspark.mobile.service.ApiService
 import com.dailyspark.mobile.ui.dialog.FontPickerSheet
+import com.dailyspark.mobile.utils.FontPreference
+import com.dailyspark.mobile.utils.FontUtils
 import com.dailyspark.mobile.utils.ShareHelper
 import com.dailyspark.mobile.viewmodel.QuoteViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class QuotesViewActivity : BaseActivity() {
     private lateinit var binding: ActivityQuotesViewBinding
@@ -68,6 +69,7 @@ class QuotesViewActivity : BaseActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
 
         isSingleItemMode = intent.getBooleanExtra(EXTRA_SINGLE_ITEM, false)
 
@@ -110,15 +112,15 @@ class QuotesViewActivity : BaseActivity() {
 
     private fun setupViewModel() {
         val database = AppDatabase.getDatabase(this)
-        val apiService = Retrofit.Builder()
-            .baseUrl("https://hifdlykomariwzphnfop.supabase.co/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(ApiService::class.java)
+        val apiService = RetrofitClient.apiService
 
         val repository = QuoteRepository(apiService, database.quoteDao(), this)
-        viewModel =
-            ViewModelProvider(this, QuoteViewModel.Factory(repository))[QuoteViewModel::class.java]
+
+        val networkMonitor = NetworkMonitor(this)
+
+        val factory = QuoteViewModel.Factory(repository, networkMonitor)
+
+        viewModel = ViewModelProvider(this, factory)[QuoteViewModel::class.java]
     }
 
     private fun handleIntentData() {
@@ -160,22 +162,43 @@ class QuotesViewActivity : BaseActivity() {
         applyCategoryStyle(binding.category, binding.quoteIcon, item.category)
 
         updateFavoriteIcon(item.isFavourite)
+
+
+        val fontId = FontPreference.getFont(this, item.id)
+
+        val font = FontUtils.getAppFonts()
+            .firstOrNull { it.id == fontId }
+            ?: FontUtils.getAppFonts().first()
+
+        applyFontToUI(font.fontResId)
+
     }
 
     private fun setupClickListeners() {
 
         binding.fonts.setOnClickListener {
-            FontPickerSheet { selectedFont ->
+            FontPickerSheet(
+                this,
+                currentFontId = FontPreference.getFont(this, currentQuoteId)
+            ) { selectedFont ->
+
                 applyFontToUI(selectedFont.fontResId)
+
+                FontPreference.saveFont(
+                    this,
+                    currentQuoteId,
+                    selectedFont.id
+                )
             }.show(supportFragmentManager, FontPickerSheet.TAG)
         }
 
-
         binding.copyLayout.setOnClickListener {
             val text = "${binding.quote.text}\n${binding.author.text}"
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clipboard.setPrimaryClip(ClipData.newPlainText("quote", text))
-            Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+            val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            AdsManager.onUserAction(this) {
+                clipboard.setPrimaryClip(ClipData.newPlainText("quote", text))
+                Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+            }
         }
 
         binding.shareLayout.setOnClickListener {
@@ -193,7 +216,9 @@ class QuotesViewActivity : BaseActivity() {
 
         binding.saveLayout.setOnClickListener {
             if (!isSingleItemMode && currentQuoteId != -1) {
-                viewModel.toggleFavourite(currentQuoteId)
+                AdsManager.onUserAction(this) {
+                    viewModel.toggleFavourite(currentQuoteId)
+                }
             }
         }
 
@@ -231,7 +256,11 @@ class QuotesViewActivity : BaseActivity() {
         MaterialAlertDialogBuilder(this, R.style.CustomAlertDialog)
             .setTitle("Set Quote as Wallpaper")
             .setItems(options) { _, which ->
-                setAsWallpaper(which)
+                AdsManager.showInterstitial(
+                    this
+                ) {
+                    setAsWallpaper(which)
+                }
             }
             .show()
     }

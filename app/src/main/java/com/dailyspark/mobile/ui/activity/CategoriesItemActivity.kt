@@ -6,7 +6,6 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
 import android.widget.PopupWindow
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
@@ -18,6 +17,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.FolderQuoteAdapter
+import com.dailyspark.mobile.ads.AdsManager
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.ActivityCategoriesItemBinding
 import com.dailyspark.mobile.databinding.PopupMenuBinding
@@ -53,11 +53,21 @@ class CategoriesItemActivity : BaseActivity() {
                     putExtra(QuotesViewActivity.EXTRA_QUOTE_AUTHOR, quote.author)
                     putExtra(QuotesViewActivity.EXTRA_QUOTE_CATEGORY, quote.category)
                 }
-                startActivity(intent)
+                AdsManager.onUserAction(this@CategoriesItemActivity) {
+                    startActivity(intent)
+                }
             },
             onShareClick = { shareQuote(it) },
-            onEditClick = { showAddEditDialog(existing = it) },
-            onDeleteClick = { confirmDeleteQuote(it) }
+            onEditClick = {
+                AdsManager.onUserAction(this@CategoriesItemActivity) {
+                    showAddEditDialog(existing = it)
+                }
+            },
+            onDeleteClick = {
+                AdsManager.onUserAction(this@CategoriesItemActivity) {
+                    confirmDeleteQuote(it)
+                }
+            }
         )
     }
 
@@ -133,7 +143,9 @@ class CategoriesItemActivity : BaseActivity() {
                     Snackbar.LENGTH_SHORT
                 ).show()
             } else {
-                showAddEditDialog(existing = null)
+                AdsManager.onUserAction(this@CategoriesItemActivity) {
+                    showAddEditDialog(existing = null)
+                }
             }
         }
     }
@@ -154,8 +166,10 @@ class CategoriesItemActivity : BaseActivity() {
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         popupBinding.deleteCategory.setOnClickListener {
-            popupWindow.dismiss()
-            viewModel.deleteFolder()
+            AdsManager.onUserAction(this@CategoriesItemActivity) {
+                popupWindow.dismiss()
+                viewModel.deleteFolder()
+            }
         }
 
         popupBinding.root.measure(
@@ -240,15 +254,6 @@ class CategoriesItemActivity : BaseActivity() {
             .setTitle("Delete Quote")
             .setMessage("Remove this quote from the folder?")
             .setPositiveButton("Delete") { _, _ -> viewModel.deleteQuote(quote) }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun confirmDeleteFolder() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Delete Folder")
-            .setMessage("This will permanently delete \"$folderName\" and all its quotes.")
-            .setPositiveButton("Delete") { _, _ -> viewModel.deleteFolder() }
             .setNegativeButton("Cancel", null)
             .show()
     }

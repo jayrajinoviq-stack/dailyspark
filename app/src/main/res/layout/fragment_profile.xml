@@ -44,8 +44,10 @@
                     android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:background="@drawable/profile_icon_bg"
+                        android:padding="8dp"
                         android:src="@drawable/burn" />
 
                     <TextView
@@ -82,8 +84,10 @@
                     android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:background="@drawable/profile_icon_save"
+                        android:padding="8dp"
                         android:src="@drawable/bookmark"
                         app:tint="#9C27B0" />
 
@@ -121,8 +125,10 @@
                     android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:background="@drawable/profile_icon_share"
+                        android:padding="8dp"
                         android:src="@drawable/share"
                         app:tint="#FF9800" />
 
@@ -219,7 +225,6 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginHorizontal="16dp"
                             android:background="@color/border" />
 
                         <RelativeLayout
@@ -261,7 +266,6 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginHorizontal="16dp"
                             android:background="@color/border" />
 
                         <LinearLayout
@@ -333,7 +337,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:paddingHorizontal="16dp"
+
                         android:paddingVertical="10dp">
 
                         <LinearLayout
@@ -402,6 +406,7 @@
                             android:id="@+id/rate_us"
                             android:layout_width="match_parent"
                             android:layout_height="60dp"
+                            android:paddingHorizontal="16dp"
                             android:gravity="center">
 
                             <androidx.appcompat.widget.AppCompatImageView
@@ -427,13 +432,13 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginHorizontal="16dp"
                             android:background="@color/border" />
 
                         <LinearLayout
                             android:id="@+id/share_app"
                             android:layout_width="match_parent"
                             android:layout_height="60dp"
+                            android:paddingHorizontal="16dp"
                             android:gravity="center">
 
                             <androidx.appcompat.widget.AppCompatImageView
@@ -459,13 +464,13 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginHorizontal="16dp"
                             android:background="@color/border" />
 
                         <LinearLayout
                             android:id="@+id/privacy_policy"
                             android:layout_width="match_parent"
                             android:layout_height="60dp"
+                            android:paddingHorizontal="16dp"
                             android:gravity="center">
 
                             <androidx.appcompat.widget.AppCompatImageView
@@ -492,13 +497,13 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginHorizontal="16dp"
                             android:background="@color/border" />
 
                         <LinearLayout
                             android:id="@+id/terms_Conditions"
                             android:layout_width="match_parent"
                             android:layout_height="60dp"
+                            android:paddingHorizontal="16dp"
                             android:gravity="center">
 
                             <androidx.appcompat.widget.AppCompatImageView

@@ -35,7 +35,7 @@ class ReminderReceiver : BroadcastReceiver() {
         }
 
         val builder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.notification)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Daily Reminder")
             .setContentText("Don't forget to check your quotes today!")
             .setContentIntent(contentIntent)

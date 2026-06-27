@@ -16,22 +16,23 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.dailyspark.mobile.NetworkMonitor
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.AddFolderAdapter
 import com.dailyspark.mobile.adapter.FolderAdapter
 import com.dailyspark.mobile.adapter.QuoteAdapter
+import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.data.RetrofitClient
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.FragmentExploreBinding
 import com.dailyspark.mobile.repository.QuoteRepository
-import com.dailyspark.mobile.service.ApiService
 import com.dailyspark.mobile.ui.activity.CategoriesItemActivity
 import com.dailyspark.mobile.ui.activity.QuotesViewActivity
 import com.dailyspark.mobile.ui.dialog.AddCategoryBottomSheet
 import com.dailyspark.mobile.viewmodel.QuoteUiState
 import com.dailyspark.mobile.viewmodel.QuoteViewModel
+import com.dailyspark.mobile.viewmodel.SyncStatus
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class ExploreFragment : Fragment() {
     private var _binding: FragmentExploreBinding? = null
@@ -40,15 +41,24 @@ class ExploreFragment : Fragment() {
     private var shouldScrollToTop = false
     private val quoteAdapter by lazy {
         QuoteAdapter(
+            requireActivity(),
             isSavedMode = false,
-            onFavouriteClick = { quote -> viewModel.toggleFavourite(quote.id) },
+            lifecycleOwner = viewLifecycleOwner,
+            onFavouriteClick = { quote ->
+                AdsManager.onUserAction(requireActivity()) {
+                    viewModel.toggleFavourite(quote.id)
+                }
+            },
             onShareClick = { quote -> },
             onItemClick = { quote, currentList ->
                 val intent = Intent(requireContext(), QuotesViewActivity::class.java).apply {
                     putExtra("SELECTED_QUOTE_ID", quote.id)
                     putExtra("QUOTE_IDS", currentList.map { it.id }.toIntArray())
                 }
-                startActivity(intent)
+
+                AdsManager.onUserAction(requireActivity()) {
+                    startActivity(intent)
+                }
             }
         )
     }
@@ -64,7 +74,9 @@ class ExploreFragment : Fragment() {
                     putExtra(CategoriesItemActivity.EXTRA_FOLDER_ID, folder.id)
                     putExtra(CategoriesItemActivity.EXTRA_FOLDER_NAME, folder.name)
                 }
-                startActivity(intent)
+                AdsManager.onUserAction(requireActivity()) {
+                    startActivity(intent)
+                }
             }
         )
     }
@@ -98,21 +110,78 @@ class ExploreFragment : Fragment() {
         setupSearch()
         setupCategoryListeners()
         observeUiState()
+        setupRetryButton()
         observeFolders()
         restoreUiState()
+        observeDataAndSync()
+    }
+
+
+    private fun setupRetryButton() {
+        binding.btnRetry.setOnClickListener {
+            viewModel.startSync(isRetry = true)
+        }
+    }
+
+    private fun observeDataAndSync() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+
+                launch {
+                    viewModel.uiState.collect { state ->
+                        when (state) {
+                            is QuoteUiState.Success -> {
+                                binding.rvList.isVisible = true
+                                binding.tvEmptyState.isVisible = false
+                                quoteAdapter.submitQuotes(state.quotes)
+                            }
+
+                            is QuoteUiState.Empty -> {
+                                if (viewModel.syncStatus.value !is SyncStatus.Loading) {
+                                    binding.tvEmptyState.isVisible = true
+                                    binding.rvList.isVisible = false
+                                }
+                            }
+
+                            is QuoteUiState.Loading -> {
+                                // Do nothing, let SyncStatus handle the spinner
+                            }
+                        }
+                    }
+                }
+
+
+                launch {
+                    viewModel.syncStatus.collect { sync ->
+
+                        val isListEmpty = quoteAdapter.itemCount == 0
+                        binding.progressBar.isVisible = (sync is SyncStatus.Loading && isListEmpty)
+
+                        binding.layoutRetry.isVisible =
+                            (sync is SyncStatus.Error || sync is SyncStatus.NoInternet) && isListEmpty
+                    }
+                }
+
+                launch {
+                    viewModel.toastEvent.collect { message ->
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
 
     private fun setupViewModel() {
         val database = AppDatabase.getDatabase(requireContext())
-        val apiService = Retrofit.Builder()
-            .baseUrl("https://hifdlykomariwzphnfop.supabase.co/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(ApiService::class.java)
+        val apiService = RetrofitClient.apiService
 
         val repository = QuoteRepository(apiService, database.quoteDao(), requireContext())
-        viewModel =
-            ViewModelProvider(this, QuoteViewModel.Factory(repository))[QuoteViewModel::class.java]
+
+        val networkMonitor = NetworkMonitor(requireContext())
+
+        val factory = QuoteViewModel.Factory(repository, networkMonitor)
+
+        viewModel = ViewModelProvider(this, factory)[QuoteViewModel::class.java]
     }
 
     private fun setupQuoteRecyclerView() {
@@ -150,19 +219,8 @@ class ExploreFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     when (state) {
-                        is QuoteUiState.Loading -> {
-                            binding.progressBar.visibility = View.VISIBLE
-                            binding.rvList.visibility = View.GONE
-                            binding.tvEmptyState.visibility = View.GONE
-                        }
-
                         is QuoteUiState.Success -> {
-                            binding.progressBar.visibility = View.GONE
-                            binding.rvList.visibility = View.VISIBLE
-                            binding.tvEmptyState.visibility = View.GONE
-
-
-                            quoteAdapter.submitList(state.quotes) {
+                            quoteAdapter.submitQuotes(state.quotes) {
                                 if (shouldScrollToTop) {
                                     binding.rvList.scrollToPosition(0)
                                     shouldScrollToTop = false
@@ -171,11 +229,10 @@ class ExploreFragment : Fragment() {
                         }
 
                         is QuoteUiState.Empty -> {
-                            binding.progressBar.visibility = View.GONE
-                            binding.rvList.visibility = View.GONE
-                            binding.tvEmptyState.visibility = View.VISIBLE
                             quoteAdapter.submitList(emptyList())
                         }
+
+                        else -> Unit
                     }
                 }
             }

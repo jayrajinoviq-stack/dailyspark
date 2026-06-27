@@ -9,32 +9,67 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.databinding.ItemFontBinding
+import com.dailyspark.mobile.databinding.ItemFontHeaderBinding
+import com.dailyspark.mobile.model.FontListItem
 import com.dailyspark.mobile.model.FontOption
 
 class FontAdapter(
     private val isUserPremium: Boolean,
-    private val onFontClick: (FontOption) -> Unit
-) : ListAdapter<FontOption, FontAdapter.FontViewHolder>(FontDiffCallback()) {
+    private val onFontClick: (FontOption) -> Unit,
+    private val onLockedFontClick: (FontOption) -> Unit = {}
+) : ListAdapter<FontListItem, RecyclerView.ViewHolder>(FontListDiffCallback()) {
 
     private var selectedId: Int = -1
+
+    companion object {
+        private const val TYPE_HEADER = 0
+        private const val TYPE_FONT = 1
+    }
 
     fun setSelected(fontId: Int) {
         val prev = selectedId
         selectedId = fontId
         currentList.forEachIndexed { index, item ->
-            if (item.id == prev || item.id == fontId) notifyItemChanged(index)
+            if (item is FontListItem.Item && (item.font.id == prev || item.font.id == fontId)) {
+                notifyItemChanged(index)
+            }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FontViewHolder {
-        val binding = ItemFontBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false
-        )
-        return FontViewHolder(binding)
+    override fun getItemViewType(position: Int): Int =
+        when (getItem(position)) {
+            is FontListItem.Header -> TYPE_HEADER
+            is FontListItem.Item -> TYPE_FONT
+        }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (viewType == TYPE_HEADER) {
+            val binding = ItemFontHeaderBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+            HeaderViewHolder(binding)
+        } else {
+            val binding = ItemFontBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+            FontViewHolder(binding)
+        }
     }
 
-    override fun onBindViewHolder(holder: FontViewHolder, position: Int) {
-        holder.bind(getItem(position))
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val item = getItem(position)) {
+            is FontListItem.Header -> (holder as HeaderViewHolder).bind(item)
+            is FontListItem.Item -> (holder as FontViewHolder).bind(item.font)
+        }
+    }
+
+     class HeaderViewHolder(private val binding: ItemFontHeaderBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(header: FontListItem.Header) {
+            binding.tvHeader.text = header.title
+            binding.proFont.visibility =
+                if (header.isPremium) android.view.View.VISIBLE else android.view.View.GONE
+        }
     }
 
     inner class FontViewHolder(private val binding: ItemFontBinding) :
@@ -68,19 +103,24 @@ class FontAdapter(
                 binding.fontName.setTextColor(ContextCompat.getColor(ctx, R.color.text_muted))
             }
 
-            binding.cardFont.alpha = if (isLocked) 0.55f else 1f
-
             binding.root.setOnClickListener {
-                onFontClick(item)
+                if (isLocked) onLockedFontClick(item) else onFontClick(item)
             }
         }
     }
 
-    private class FontDiffCallback : DiffUtil.ItemCallback<FontOption>() {
-        override fun areItemsTheSame(oldItem: FontOption, newItem: FontOption): Boolean =
-            oldItem.id == newItem.id
+    private class FontListDiffCallback : DiffUtil.ItemCallback<FontListItem>() {
+        override fun areItemsTheSame(oldItem: FontListItem, newItem: FontListItem): Boolean {
+            return when {
+                oldItem is FontListItem.Header && newItem is FontListItem.Header ->
+                    oldItem.title == newItem.title
+                oldItem is FontListItem.Item && newItem is FontListItem.Item ->
+                    oldItem.font.id == newItem.font.id
+                else -> false
+            }
+        }
 
-        override fun areContentsTheSame(oldItem: FontOption, newItem: FontOption): Boolean =
+        override fun areContentsTheSame(oldItem: FontListItem, newItem: FontListItem): Boolean =
             oldItem == newItem
     }
 }

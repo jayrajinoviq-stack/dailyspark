@@ -1,5 +1,6 @@
 package com.dailyspark.mobile.ui.dialog
 
+import android.app.Activity
 import android.app.Dialog
 import android.graphics.Color
 import android.os.Bundle
@@ -10,13 +11,18 @@ import android.widget.FrameLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.FontAdapter
+import com.dailyspark.mobile.ads.AdsManager
 import com.dailyspark.mobile.databinding.LayoutFontBottomSheetBinding
+import com.dailyspark.mobile.model.FontListItem
 import com.dailyspark.mobile.model.FontOption
+import com.dailyspark.mobile.model.PremiumBottomSheetData
+import com.dailyspark.mobile.utils.FontUtils
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class FontPickerSheet(
+    private val activity: Activity,
     private val isUserPremium: Boolean = false,
     private val currentFontId: Int = -1,
     private val onFontSelected: (FontOption) -> Unit
@@ -24,8 +30,8 @@ class FontPickerSheet(
 
     private var _binding: LayoutFontBottomSheetBinding? = null
     private val binding get() = _binding!!
-
     private var pendingSelection: FontOption? = null
+    private lateinit var fontAdapter: FontAdapter
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
@@ -81,22 +87,65 @@ class FontPickerSheet(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val fontAdapter = FontAdapter(isUserPremium) { selectedFont ->
-            val locked = selectedFont.isPremium && !isUserPremium
-            if (locked) {
-                return@FontAdapter
+        fontAdapter = FontAdapter(
+            isUserPremium = isUserPremium,
+            onFontClick = { selectedFont ->
+                pendingSelection = selectedFont
+                fontAdapter.setSelected(selectedFont.id)
+            },
+            onLockedFontClick = { lockedFont ->
+                PremiumBottomSheet(
+
+                    data = PremiumBottomSheetData(
+
+                        icon = R.drawable.play,
+
+                        title = "Premium Font",
+
+                        description = "Watch a short ad to unlock this font instantly or upgrade to Pro for unlimited premium fonts.",
+
+                        features = listOf(
+                            "Free forever",
+                            "~30 seconds",
+                            "Skippable"
+                        ),
+
+                        primaryButton = "Watch Ad & Unlock",
+
+                        secondaryButton = "Upgrade to Pro — Remove All Ads"
+                    ),
+
+                    onPrimaryClick = {
+                        AdsManager.showInterstitialDirect(activity) {
+                            pendingSelection = lockedFont
+                            fontAdapter.setSelected(lockedFont.id)
+                        }
+                    },
+
+                    onSecondaryClick = {
+
+                    }
+
+                ).show(parentFragmentManager, "premium")
             }
-            pendingSelection = selectedFont
-            (binding.rvFonts.adapter as? FontAdapter)?.setSelected(selectedFont.id)
+        )
+
+        val gridLayoutManager = GridLayoutManager(requireContext(), 2)
+        gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return when (fontAdapter.currentList.getOrNull(position)) {
+                    is FontListItem.Header -> 2
+                    else -> 1
+                }
+            }
         }
 
         binding.rvFonts.apply {
-            layoutManager = GridLayoutManager(requireContext(), 2)
+            layoutManager = gridLayoutManager
             adapter = fontAdapter
         }
 
-        val fonts = getAppFonts()
-        fontAdapter.submitList(fonts)
+        fontAdapter.submitList(FontUtils.getGroupedFontListItems())
         if (currentFontId != -1) fontAdapter.setSelected(currentFontId)
 
         binding.btnDone.setOnClickListener {
@@ -104,24 +153,6 @@ class FontPickerSheet(
             dismiss()
         }
     }
-
-    private fun getAppFonts() = listOf(
-        FontOption(7, "Manrope", R.font.manrope),
-        FontOption(8, "Merriweather", R.font.merriweather),
-        FontOption(9, "Montserrat", R.font.montserrat),
-        FontOption(10, "Nunito", R.font.nunito),
-        FontOption(11, "Pacifico", R.font.pacifico),
-        FontOption(12, "Poppins", R.font.poppins),
-        FontOption(13, "Raleway", R.font.raleway),
-        FontOption(14, "Satisfy", R.font.satisfy),
-
-        FontOption(1, "Great Vibes", R.font.great_vibes, isPremium = true),
-        FontOption(2, "Dancing Script", R.font.dancing_script, isPremium = true),
-        FontOption(3, "Playfair", R.font.playfair_display, isPremium = true),
-        FontOption(4, "Cormorant", R.font.cormorant_garamond, isPremium = true),
-        FontOption(5, "DM Serif", R.font.dm_serif_display, isPremium = true),
-        FontOption(6, "Kaushan", R.font.kaushan_script, isPremium = true)
-    )
 
     override fun onDestroyView() {
         super.onDestroyView()

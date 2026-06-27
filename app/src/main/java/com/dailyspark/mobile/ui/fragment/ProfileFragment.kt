@@ -33,6 +33,7 @@ import com.dailyspark.mobile.repository.QuoteRepository
 import com.dailyspark.mobile.repository.StatsRepository
 import com.dailyspark.mobile.repository.StreakRepository
 import com.dailyspark.mobile.service.ApiService
+import com.dailyspark.mobile.ui.dialog.RateUsDialog
 import com.dailyspark.mobile.utils.ReminderHelper
 import com.dailyspark.mobile.utils.ThemeManager
 import com.dailyspark.mobile.viewmodel.ProfileViewModel
@@ -85,24 +86,16 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupClick() {
-
         binding.rateUs.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                "Rate Us",
-                Toast.LENGTH_SHORT
-            ).show()
+            RateUsDialog().show(parentFragmentManager, RateUsDialog.TAG)
         }
-
         binding.appVersion.text = "Daily Spark v${BuildConfig.VERSION_NAME}"
         binding.shareApp.setOnClickListener {
             shareApp()
         }
-
         binding.privacyPolicy.setOnClickListener {
             openUrl("https://yashbhalala.github.io/dailyspark-legal/privacy-policy.html")
         }
-
         binding.termsConditions.setOnClickListener {
             openUrl("https://yashbhalala.github.io/dailyspark-legal/terms-of-use.html")
         }
@@ -147,8 +140,6 @@ class ProfileFragment : Fragment() {
             )
         )
     }
-
-
 
 
     private fun setupReminderUI() {
@@ -348,16 +339,11 @@ class ProfileFragment : Fragment() {
             .show()
     }
 
-
     private fun setupThemeSwitch() {
         binding.switchDark.isChecked = ThemeManager.isDarkMode(requireContext())
         binding.switchDark.setOnCheckedChangeListener { _, isChecked ->
             ThemeManager.setDarkMode(requireContext(), isChecked)
             requireActivity().recreate()
-            requireActivity().overridePendingTransition(
-                android.R.anim.fade_in,
-                android.R.anim.fade_out
-            )
         }
     }
 

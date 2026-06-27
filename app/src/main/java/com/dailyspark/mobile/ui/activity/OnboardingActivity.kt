@@ -1,6 +1,5 @@
 package com.dailyspark.mobile.ui.activity
 
-import AdsManager
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -9,9 +8,11 @@ import android.widget.RelativeLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.OnboardingAdapter
+import com.dailyspark.mobile.ads.AdsManager
 import com.dailyspark.mobile.databinding.ActivityOnboardingBinding
 import com.dailyspark.mobile.model.OnboardingItem
 
@@ -72,8 +73,14 @@ class OnboardingActivity : BaseActivity() {
     private fun setupViewPager() {
         binding.viewPager.adapter = onboardingAdapter
         onboardingAdapter.submitList(items)
-
+        binding.viewPager.offscreenPageLimit = items.size
         binding.dotsIndicator.attachTo(binding.viewPager)
+
+
+        (binding.viewPager.getChildAt(0) as? RecyclerView)?.let {
+            it.setItemViewCacheSize(items.size)
+        }
+
 
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {

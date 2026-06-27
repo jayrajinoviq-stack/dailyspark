@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="24dp"
+    app:cardBackgroundColor="@color/card_secondary"
+    app:cardCornerRadius="28dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="10dp"
+        android:paddingTop="24dp"
+        android:paddingHorizontal="18dp">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="@null"
+            android:src="@mipmap/ic_launcher" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Rate DailySpark"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Your feedback helps us improve and motivates us to build a better experience."
+            android:textColor="@color/text_muted"
+            android:textSize="15sp" />
+
+        <LinearLayout
+            android:id="@+id/layoutStars"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/star1"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_margin="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="4dp"
+                android:src="@drawable/star_outline"
+                app:tint="@color/text_muted" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/star2"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_margin="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="4dp"
+                android:src="@drawable/star_outline"
+                app:tint="@color/text_muted" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/star3"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_margin="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="4dp"
+                android:src="@drawable/star_outline"
+                app:tint="@color/text_muted" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/star4"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_margin="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="4dp"
+                android:src="@drawable/star_outline"
+                app:tint="@color/text_muted" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/star5"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_margin="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="4dp"
+                android:src="@drawable/star_outline"
+                app:tint="@color/text_muted" />
+
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvRatingMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:text="Tap a star to rate"
+            android:textColor="@color/text_muted"
+            android:textSize="14sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSubmit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:padding="14dp"
+            android:text="Submit"
+            android:textAllCaps="false"
+            android:textColor="@color/app_text"
+            android:textStyle="bold"
+            app:backgroundTint="@color/app_accent"
+            app:cornerRadius="16dp"
+            app:iconGravity="textStart" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/btnLater"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="14dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:text="Maybe Later"
+            android:textColor="@color/text_muted"
+            android:textSize="15sp" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,6 +1,8 @@
 package com.dailyspark.mobile.utils
 
+import android.app.UiModeManager
 import android.content.Context
+import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 
 object ThemeManager {
@@ -16,21 +18,25 @@ object ThemeManager {
     fun setDarkMode(context: Context, isDark: Boolean) {
         val pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         pref.edit().putBoolean(KEY_DARK_MODE, isDark).apply()
-
-        AppCompatDelegate.setDefaultNightMode(
-            if (isDark)
-                AppCompatDelegate.MODE_NIGHT_YES
-            else
-                AppCompatDelegate.MODE_NIGHT_NO
-        )
+        applyTheme(context, isDark)
     }
 
     fun applyTheme(context: Context) {
-        AppCompatDelegate.setDefaultNightMode(
-            if (isDarkMode(context))
-                AppCompatDelegate.MODE_NIGHT_YES
-            else
-                AppCompatDelegate.MODE_NIGHT_NO
-        )
+        applyTheme(context, isDarkMode(context))
+    }
+
+    private fun applyTheme(context: Context, isDark: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+            uiModeManager.setApplicationNightMode(
+                if (isDark) UiModeManager.MODE_NIGHT_YES
+                else UiModeManager.MODE_NIGHT_NO
+            )
+        } else {
+            AppCompatDelegate.setDefaultNightMode(
+                if (isDark) AppCompatDelegate.MODE_NIGHT_YES
+                else AppCompatDelegate.MODE_NIGHT_NO
+            )
+        }
     }
 }

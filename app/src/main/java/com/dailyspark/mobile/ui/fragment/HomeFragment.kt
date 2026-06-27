@@ -16,6 +16,7 @@ import android.view.animation.Animation
 import android.view.animation.RotateAnimation
 import android.widget.FrameLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -24,41 +25,40 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.dailyspark.mobile.NetworkMonitor
 import com.dailyspark.mobile.R
+import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.ads.NativeAdsManager
+import com.dailyspark.mobile.data.RetrofitClient
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.FragmentHomeBinding
 import com.dailyspark.mobile.model.QuoteEntity
 import com.dailyspark.mobile.repository.QuoteRepository
 import com.dailyspark.mobile.repository.StreakRepository
-import com.dailyspark.mobile.service.ApiService
 import com.dailyspark.mobile.ui.activity.QuotesViewActivity
 import com.dailyspark.mobile.utils.ShareHelper
 import com.dailyspark.mobile.viewmodel.HomeViewModel
-import com.google.firebase.Firebase
-import com.google.firebase.crashlytics.crashlytics
+import com.dailyspark.mobile.viewmodel.SyncStatus
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    val retrofit = Retrofit.Builder()
-        .baseUrl("https://your-project-id.supabase.co/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
+
 
     private val viewModel: HomeViewModel by viewModels {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val database = AppDatabase.getDatabase(requireContext())
-                val apiServiceInstance = retrofit.create(ApiService::class.java)
-                val quoteRepo =
-                    QuoteRepository(apiServiceInstance, database.quoteDao(), requireContext())
-                val streakRepo = StreakRepository(requireContext())
-                return HomeViewModel(streakRepo, quoteRepo) as T
+                val context = requireContext().applicationContext
+                val database = AppDatabase.getDatabase(context)
+                val apiServiceInstance = RetrofitClient.apiService
+                val quoteRepo = QuoteRepository(apiServiceInstance, database.quoteDao(), context)
+                val streakRepo = StreakRepository(context)
+                val networkMonitor = NetworkMonitor(context)
+                return HomeViewModel(streakRepo, quoteRepo, networkMonitor) as T
             }
         }
     }
@@ -79,46 +79,57 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
+        AdsManager.loadInterstitial(requireContext())
+
         setupCategoryListeners()
         setupQuoteActions()
         observeData()
     }
 
+
     private fun setupCategoryListeners() {
         getCategoryViews().forEach { (name, layout) ->
             layout.setOnClickListener {
-                viewModel.setCategory(name)
+                AdsManager.onUserAction(requireActivity()) {
+                    viewModel.setCategory(name)
+                }
             }
         }
     }
 
     private fun setupQuoteActions() {
         binding.btnNext.setOnClickListener {
-            val rotate = RotateAnimation(
-                0f, 360f,
-                Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f
-            )
-            rotate.duration = 500
-            binding.ivNext.startAnimation(rotate)
+            AdsManager.onUserAction(requireActivity()) {
+                val rotate = RotateAnimation(
+                    0f, 360f,
+                    Animation.RELATIVE_TO_SELF, 0.5f,
+                    Animation.RELATIVE_TO_SELF, 0.5f
+                )
+                rotate.duration = 500
+                binding.ivNext.startAnimation(rotate)
+                viewModel.showNextQuote()
+            }
+        }
 
-            viewModel.showNextQuote()
+        binding.btnRetry.setOnClickListener {
+            viewModel.performSync(isRetry = true)
         }
 
         binding.btnCopy.setOnClickListener {
-            val text = binding.tvQuote.text.toString()
-            val clipboard =
-                requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clipboard.setPrimaryClip(ClipData.newPlainText("quote", text))
+            AdsManager.onUserAction(requireActivity()) {
+                val text = binding.tvQuote.text.toString()
+                val clipboard =
+                    requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("quote", text))
 
-            binding.tvCopy.text = "Copied!"
-            binding.ivCopy.setImageResource(R.drawable.check)
+                binding.tvCopy.text = "Copied!"
+                binding.ivCopy.setImageResource(R.drawable.check)
 
-
-            viewLifecycleOwner.lifecycleScope.launch {
-                delay(1500)
-                binding.tvCopy.text = "Copy"
-                binding.ivCopy.setImageResource(R.drawable.copy)
+                viewLifecycleOwner.lifecycleScope.launch {
+                    delay(1500)
+                    binding.tvCopy.text = "Copy"
+                    binding.ivCopy.setImageResource(R.drawable.copy)
+                }
             }
         }
 
@@ -136,13 +147,16 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
         binding.btnLike.setOnClickListener {
             val quote = viewModel.uiState.value.currentQuote ?: return@setOnClickListener
-            val newStatus = !quote.isFavourite
-            updateLikeButtonUI(newStatus)
-            binding.ivLike.animate().scaleX(1.3f).scaleY(1.3f).setDuration(100).withEndAction {
-                binding.ivLike.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
-            }.start()
+            AdsManager.onUserAction(requireActivity()) {
+                val newStatus = !quote.isFavourite
+                updateLikeButtonUI(newStatus)
+                binding.ivLike.animate().scaleX(1.3f).scaleY(1.3f).setDuration(100).withEndAction {
+                    binding.ivLike.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
+                }.start()
 
-            viewModel.toggleFavourite(quote.id)
+                viewModel.toggleFavourite(quote.id)
+            }
+
         }
     }
 
@@ -154,7 +168,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         } else {
             binding.ivLike.setImageResource(R.drawable.heart)
             binding.ivLike.imageTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(requireContext(), R.color.text_muted)
+                ContextCompat.getColor(requireContext(), R.color.icon_tint)
             )
             binding.tvLike.text = "Like"
         }
@@ -164,10 +178,62 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun observeData() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { state ->
-                    updateCategorySelectionUI(state.selectedCategory)
-                    state.currentQuote?.let { updateQuoteCard(it, state.categoryQuotes) }
-                    updateStreakUI(state.streakState)
+
+                launch {
+                    viewModel.toastEvent.collect { message ->
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                launch {
+                    viewModel.uiState.combine(viewModel.syncStatus) { state, sync ->
+                        state to sync
+                    }.collect { (state, sync) ->
+
+                        val hasData = state.currentQuote != null
+
+                        when {
+                            hasData -> {
+                                binding.cardQuote.visibility = View.VISIBLE
+                                binding.progressBar.visibility = View.GONE
+                                binding.layoutRetry.visibility = View.GONE
+
+                                updateCategorySelectionUI(state.selectedCategory)
+                                state.currentQuote?.let {
+                                    updateQuoteCard(
+                                        it,
+                                        state.categoryQuotes
+                                    )
+                                }
+                            }
+
+                            sync is SyncStatus.Loading || state.isLoading -> {
+                                binding.cardQuote.visibility = View.GONE
+                                binding.progressBar.visibility = View.VISIBLE
+                                binding.layoutRetry.visibility = View.GONE
+                            }
+
+                            sync is SyncStatus.Error || sync is SyncStatus.NoInternet -> {
+                                binding.cardQuote.visibility = View.GONE
+                                binding.progressBar.visibility = View.GONE
+                                binding.layoutRetry.visibility = View.VISIBLE
+                            }
+
+                            sync is SyncStatus.Success && !hasData && !state.isLoading -> {
+                                binding.cardQuote.visibility = View.GONE
+                                binding.progressBar.visibility = View.GONE
+                                binding.layoutRetry.visibility = View.GONE
+                            }
+
+                            else -> {
+                                binding.cardQuote.visibility = View.GONE
+                                binding.progressBar.visibility = View.GONE
+                                binding.layoutRetry.visibility = View.VISIBLE
+                            }
+                        }
+
+                        updateStreakUI(state.streakState)
+                    }
                 }
             }
         }
@@ -175,7 +241,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun updateCategorySelectionUI(selectedCategory: String) {
         val accentColor =
-            androidx.core.content.ContextCompat.getColor(requireContext(), R.color.accent)
+            ContextCompat.getColor(requireContext(), R.color.accent)
         val mutedTextColor = Color.parseColor("#8E8E93")
 
         getCategoryViews().forEach { (name, layout) ->
@@ -242,7 +308,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 putExtra("QUOTE_IDS", categoryQuotes.map { it.id }.toIntArray())
                 putExtra("RANDOM_NEXT", true)
             }
-            startActivity(intent)
+            AdsManager.onUserAction(requireActivity()) {
+                startActivity(intent)
+            }
         }
 
         binding.tvQuote.text = '"' + quote.quote + '"'

@@ -1,7 +1,3 @@
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
@@ -17,8 +13,8 @@ android {
         applicationId = "com.dailyspark.mobile"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0_test"
+        versionCode = 2
+        versionName = "1.1_test"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -52,28 +48,7 @@ android {
         buildConfig = true
     }
 
-
-    tasks.register<Copy>("renameReleaseApk") {
-
-        val date = SimpleDateFormat(
-            "yyyy-MM-dd_HHmm",
-            Locale.getDefault()
-        ).format(Date())
-
-        from(layout.buildDirectory.dir("outputs/apk/release"))
-
-        include("*.apk")
-
-        rename {
-            "DailySpark_v${android.defaultConfig.versionName}_${android.defaultConfig.versionCode}_$date.apk"
-        }
-
-        into(layout.buildDirectory.dir("renamed-apk"))
-    }
-
 }
-
-
 
 
 dependencies {
@@ -123,4 +98,13 @@ dependencies {
     implementation("com.google.firebase:firebase-crashlytics")
 
     implementation("com.google.android.gms:play-services-ads:25.4.0")
+
+    implementation("com.google.android.play:review:2.0.2")
+    implementation("com.google.android.play:review-ktx:2.0.2")
+
+    implementation("com.google.android.play:app-update:2.1.0")
+    implementation("com.google.android.play:app-update-ktx:2.1.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
 }
