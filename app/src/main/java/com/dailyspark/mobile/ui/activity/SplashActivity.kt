@@ -8,6 +8,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.ads.AppOpenAdManager
 import com.dailyspark.mobile.data.RetrofitClient
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.ActivitySplashBinding
@@ -49,7 +50,7 @@ class SplashActivity : BaseActivity() {
             val isFinished = prefs.getBoolean("finished", false)
 
             if (isFinished) {
-                AdsManager.showAppOpen(this@SplashActivity) {
+                AppOpenAdManager.showAdOnSplash(this@SplashActivity) {
                     startActivity(Intent(this@SplashActivity, MainActivity::class.java))
                     finish()
                 }

@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 object NativeAdsManager {
 
-    private const val NATIVE_AD_ID = "ca-app-pub-3940256099942544/2247696110"
     private const val LOAD_TIMEOUT_MS = 8000L
     private val mainHandler = Handler(Looper.getMainLooper())
     private val adCache = ConcurrentHashMap<String, NativeAd>()
@@ -88,7 +87,7 @@ object NativeAdsManager {
         }
         mainHandler.postDelayed(timeoutRunnable, LOAD_TIMEOUT_MS)
 
-        val adLoader = AdLoader.Builder(context, NATIVE_AD_ID)
+        val adLoader = AdLoader.Builder(context, AdsResponse.NATIVE_ID)
             .forNativeAd { nativeAd ->
                 mainHandler.removeCallbacks(timeoutRunnable)
 

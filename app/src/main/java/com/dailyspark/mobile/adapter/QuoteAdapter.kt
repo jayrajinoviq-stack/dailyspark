@@ -87,6 +87,7 @@ class QuoteAdapter(
                 )
                 AdViewHolder(binding)
             }
+
             else -> {
                 val binding = ItemQuoteBinding.inflate(
                     LayoutInflater.from(parent.context), parent, false
@@ -130,7 +131,7 @@ class QuoteAdapter(
                 context = binding.root.context,
                 container = binding.nativeAdFrame,
                 lifecycleOwner = lifecycleOwner,
-                adUnitKey = "saved_list_ad_slot"
+                adUnitKey = "saved_list_ad_slot_${System.currentTimeMillis()}"
             )
         }
     }
@@ -207,7 +208,8 @@ class QuoteAdapter(
             }
         }
 
-        override fun areContentsTheSame(old: QuoteListItem, new: QuoteListItem): Boolean = old == new
+        override fun areContentsTheSame(old: QuoteListItem, new: QuoteListItem): Boolean =
+            old == new
 
         override fun getChangePayload(old: QuoteListItem, new: QuoteListItem): Any? {
             if (old is QuoteListItem.Quote && new is QuoteListItem.Quote &&

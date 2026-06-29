@@ -256,9 +256,7 @@ class QuotesViewActivity : BaseActivity() {
         MaterialAlertDialogBuilder(this, R.style.CustomAlertDialog)
             .setTitle("Set Quote as Wallpaper")
             .setItems(options) { _, which ->
-                AdsManager.showInterstitial(
-                    this
-                ) {
+                AdsManager.showInterstitialDirect(this) {
                     setAsWallpaper(which)
                 }
             }

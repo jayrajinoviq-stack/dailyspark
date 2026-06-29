@@ -13,6 +13,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.OnboardingAdapter
 import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.ads.AppOpenAdManager
 import com.dailyspark.mobile.databinding.ActivityOnboardingBinding
 import com.dailyspark.mobile.model.OnboardingItem
 
@@ -27,7 +28,6 @@ class OnboardingActivity : BaseActivity() {
         binding = ActivityOnboardingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        AdsManager.loadAppOpen(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.btnContinue) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -139,7 +139,7 @@ class OnboardingActivity : BaseActivity() {
     }
 
     private fun finishOnboarding() {
-        AdsManager.showAppOpen(this@OnboardingActivity) {
+        AppOpenAdManager.showAdOnSplash(this) {
             getSharedPreferences("onboarding", MODE_PRIVATE).edit().putBoolean("finished", true)
                 .apply()
             startActivity(Intent(this, MainActivity::class.java))
