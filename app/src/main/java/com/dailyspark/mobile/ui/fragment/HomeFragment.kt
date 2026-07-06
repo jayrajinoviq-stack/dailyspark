@@ -27,8 +27,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.dailyspark.mobile.NetworkMonitor
 import com.dailyspark.mobile.R
-import com.dailyspark.mobile.ads.AdsManager
-import com.dailyspark.mobile.ads.NativeAdsManager
+import com.dailyspark.mobile.ads.InterstitialAdManager
 import com.dailyspark.mobile.data.RetrofitClient
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.FragmentHomeBinding
@@ -79,7 +78,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
-        AdsManager.loadInterstitial(requireContext())
+        InterstitialAdManager.loadInterstitial(requireContext())
 
         setupCategoryListeners()
         setupQuoteActions()
@@ -90,7 +89,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun setupCategoryListeners() {
         getCategoryViews().forEach { (name, layout) ->
             layout.setOnClickListener {
-                AdsManager.onUserAction(requireActivity()) {
+                InterstitialAdManager.onUserAction(requireActivity()) {
                     viewModel.setCategory(name)
                 }
             }
@@ -99,7 +98,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun setupQuoteActions() {
         binding.btnNext.setOnClickListener {
-            AdsManager.onUserAction(requireActivity()) {
+            InterstitialAdManager.onUserAction(requireActivity()) {
                 val rotate = RotateAnimation(
                     0f, 360f,
                     Animation.RELATIVE_TO_SELF, 0.5f,
@@ -116,7 +115,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         binding.btnCopy.setOnClickListener {
-            AdsManager.onUserAction(requireActivity()) {
+            InterstitialAdManager.onUserAction(requireActivity()) {
                 val text = binding.tvQuote.text.toString()
                 val clipboard =
                     requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -147,7 +146,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
         binding.btnLike.setOnClickListener {
             val quote = viewModel.uiState.value.currentQuote ?: return@setOnClickListener
-            AdsManager.onUserAction(requireActivity()) {
+            InterstitialAdManager.onUserAction(requireActivity()) {
                 val newStatus = !quote.isFavourite
                 updateLikeButtonUI(newStatus)
                 binding.ivLike.animate().scaleX(1.3f).scaleY(1.3f).setDuration(100).withEndAction {
@@ -308,7 +307,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 putExtra("QUOTE_IDS", categoryQuotes.map { it.id }.toIntArray())
                 putExtra("RANDOM_NEXT", true)
             }
-            AdsManager.onUserAction(requireActivity()) {
+            InterstitialAdManager.onUserAction(requireActivity()) {
                 startActivity(intent)
             }
         }

@@ -11,7 +11,7 @@ import android.widget.FrameLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.FontAdapter
-import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.ads.InterstitialAdManager
 import com.dailyspark.mobile.databinding.LayoutFontBottomSheetBinding
 import com.dailyspark.mobile.model.FontListItem
 import com.dailyspark.mobile.model.FontOption
@@ -116,7 +116,7 @@ class FontPickerSheet(
                     ),
 
                     onPrimaryClick = {
-                        AdsManager.showInterstitialDirect(activity) {
+                        InterstitialAdManager.showInterstitialDirect(activity) {
                             pendingSelection = lockedFont
                             fontAdapter.setSelected(lockedFont.id)
                         }

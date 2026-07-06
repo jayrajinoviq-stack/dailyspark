@@ -17,7 +17,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.FolderQuoteAdapter
-import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.ads.InterstitialAdManager
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.ActivityCategoriesItemBinding
 import com.dailyspark.mobile.databinding.PopupMenuBinding
@@ -53,18 +53,18 @@ class CategoriesItemActivity : BaseActivity() {
                     putExtra(QuotesViewActivity.EXTRA_QUOTE_AUTHOR, quote.author)
                     putExtra(QuotesViewActivity.EXTRA_QUOTE_CATEGORY, quote.category)
                 }
-                AdsManager.onUserAction(this@CategoriesItemActivity) {
+                InterstitialAdManager.onUserAction(this@CategoriesItemActivity) {
                     startActivity(intent)
                 }
             },
             onShareClick = { shareQuote(it) },
             onEditClick = {
-                AdsManager.onUserAction(this@CategoriesItemActivity) {
+                InterstitialAdManager.onUserAction(this@CategoriesItemActivity) {
                     showAddEditDialog(existing = it)
                 }
             },
             onDeleteClick = {
-                AdsManager.onUserAction(this@CategoriesItemActivity) {
+                InterstitialAdManager.onUserAction(this@CategoriesItemActivity) {
                     confirmDeleteQuote(it)
                 }
             }
@@ -143,7 +143,7 @@ class CategoriesItemActivity : BaseActivity() {
                     Snackbar.LENGTH_SHORT
                 ).show()
             } else {
-                AdsManager.onUserAction(this@CategoriesItemActivity) {
+                InterstitialAdManager.onUserAction(this@CategoriesItemActivity) {
                     showAddEditDialog(existing = null)
                 }
             }
@@ -166,7 +166,7 @@ class CategoriesItemActivity : BaseActivity() {
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         popupBinding.deleteCategory.setOnClickListener {
-            AdsManager.onUserAction(this@CategoriesItemActivity) {
+            InterstitialAdManager.onUserAction(this@CategoriesItemActivity) {
                 popupWindow.dismiss()
                 viewModel.deleteFolder()
             }

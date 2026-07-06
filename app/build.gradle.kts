@@ -1,3 +1,6 @@
+import java.text.SimpleDateFormat
+import java.util.Date
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
@@ -9,12 +12,21 @@ android {
     namespace = "com.dailyspark.mobile"
     compileSdk = 36
 
+
+    val appVersionCode = 3
+    val appVersionName = "1.2"
+    val currentDate: String = SimpleDateFormat("yyyy-MM-dd").format(Date())
+
+    base {
+        archivesName.set("DailySpark-$appVersionName($appVersionCode)-$currentDate")
+    }
+
     defaultConfig {
         applicationId = "com.dailyspark.mobile"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.2_test"
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -92,19 +104,16 @@ dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
 
     implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
-
+    implementation ("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-analytics")
 
     implementation("com.google.firebase:firebase-crashlytics")
 
     implementation("com.google.android.gms:play-services-ads:25.4.0")
 
-    implementation("com.google.android.play:review:2.0.2")
-    implementation("com.google.android.play:review-ktx:2.0.2")
-
-    implementation("com.google.android.play:app-update:2.1.0")
     implementation("com.google.android.play:app-update-ktx:2.1.0")
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     implementation("com.facebook.shimmer:shimmer:0.5.0")
+
 }

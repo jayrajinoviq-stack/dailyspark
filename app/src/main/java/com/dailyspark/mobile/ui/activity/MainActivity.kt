@@ -6,7 +6,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.dailyspark.mobile.R
-import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.ads.InterstitialAdManager
 import com.dailyspark.mobile.databinding.ActivityMainBinding
 import com.dailyspark.mobile.util.InAppUpdateHelper
 import com.google.android.play.core.install.model.AppUpdateType

@@ -1,5 +1,6 @@
 package com.dailyspark.mobile.ui.activity
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -7,7 +8,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.dailyspark.mobile.R
-import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.ads.AdsResponse
+import com.dailyspark.mobile.ads.InterstitialAdManager
 import com.dailyspark.mobile.ads.AppOpenAdManager
 import com.dailyspark.mobile.data.RetrofitClient
 import com.dailyspark.mobile.data.database.AppDatabase
@@ -17,6 +19,8 @@ import com.dailyspark.mobile.utils.ThemeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 class SplashActivity : BaseActivity() {
 
@@ -40,11 +44,16 @@ class SplashActivity : BaseActivity() {
         val repo = QuoteRepository(api, database.quoteDao(), this)
 
         lifecycleScope.launch {
-            launch(Dispatchers.IO) {
+
+            val syncJob = launch(Dispatchers.IO) {
                 repo.syncDataIfNeeded()
             }
 
+            fetchAdConfigSuspended(this@SplashActivity)
+            InterstitialAdManager.loadInterstitial(applicationContext)
+
             delay(800)
+
 
             val prefs = getSharedPreferences("onboarding", MODE_PRIVATE)
             val isFinished = prefs.getBoolean("finished", false)
@@ -60,4 +69,13 @@ class SplashActivity : BaseActivity() {
             }
         }
     }
+
+    private suspend fun fetchAdConfigSuspended(context: Context): Unit =
+        suspendCancellableCoroutine { continuation ->
+            AdsResponse.fetchAdConfig(context) {
+                if (continuation.isActive) {
+                    continuation.resume(Unit)
+                }
+            }
+        }
 }

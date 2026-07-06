@@ -21,7 +21,7 @@ import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.AddFolderAdapter
 import com.dailyspark.mobile.adapter.FolderAdapter
 import com.dailyspark.mobile.adapter.QuoteAdapter
-import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.ads.InterstitialAdManager
 import com.dailyspark.mobile.data.RetrofitClient
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.FragmentExploreBinding
@@ -45,7 +45,7 @@ class ExploreFragment : Fragment() {
             isSavedMode = false,
             lifecycleOwner = viewLifecycleOwner,
             onFavouriteClick = { quote ->
-                AdsManager.onUserAction(requireActivity()) {
+                InterstitialAdManager.onUserAction(requireActivity()) {
                     viewModel.toggleFavourite(quote.id)
                 }
             },
@@ -56,7 +56,7 @@ class ExploreFragment : Fragment() {
                     putExtra("QUOTE_IDS", currentList.map { it.id }.toIntArray())
                 }
 
-                AdsManager.onUserAction(requireActivity()) {
+                InterstitialAdManager.onUserAction(requireActivity()) {
                     startActivity(intent)
                 }
             }
@@ -74,7 +74,7 @@ class ExploreFragment : Fragment() {
                     putExtra(CategoriesItemActivity.EXTRA_FOLDER_ID, folder.id)
                     putExtra(CategoriesItemActivity.EXTRA_FOLDER_NAME, folder.name)
                 }
-                AdsManager.onUserAction(requireActivity()) {
+                InterstitialAdManager.onUserAction(requireActivity()) {
                     startActivity(intent)
                 }
             }

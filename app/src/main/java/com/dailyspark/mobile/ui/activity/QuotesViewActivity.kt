@@ -26,7 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.dailyspark.mobile.NetworkMonitor
 import com.dailyspark.mobile.R
-import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.ads.InterstitialAdManager
 import com.dailyspark.mobile.data.RetrofitClient
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.ActivityQuotesViewBinding
@@ -50,7 +50,6 @@ class QuotesViewActivity : BaseActivity() {
     private var currentQuoteId: Int = -1
     private var randomNext: Boolean = false
     private var isSingleItemMode: Boolean = false
-
     companion object {
         const val EXTRA_SINGLE_ITEM = "extra_single_item"
         const val EXTRA_QUOTE_TEXT = "extra_quote_text"
@@ -195,7 +194,7 @@ class QuotesViewActivity : BaseActivity() {
         binding.copyLayout.setOnClickListener {
             val text = "${binding.quote.text}\n${binding.author.text}"
             val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-            AdsManager.onUserAction(this) {
+            InterstitialAdManager.onUserAction(this) {
                 clipboard.setPrimaryClip(ClipData.newPlainText("quote", text))
                 Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
             }
@@ -216,7 +215,7 @@ class QuotesViewActivity : BaseActivity() {
 
         binding.saveLayout.setOnClickListener {
             if (!isSingleItemMode && currentQuoteId != -1) {
-                AdsManager.onUserAction(this) {
+                InterstitialAdManager.onUserAction(this) {
                     viewModel.toggleFavourite(currentQuoteId)
                 }
             }
@@ -256,7 +255,7 @@ class QuotesViewActivity : BaseActivity() {
         MaterialAlertDialogBuilder(this, R.style.CustomAlertDialog)
             .setTitle("Set Quote as Wallpaper")
             .setItems(options) { _, which ->
-                AdsManager.showInterstitialDirect(this) {
+                InterstitialAdManager.showInterstitialDirect(this) {
                     setAsWallpaper(which)
                 }
             }

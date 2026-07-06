@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.dailyspark.mobile.NetworkMonitor
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.QuoteAdapter
-import com.dailyspark.mobile.ads.AdsManager
+import com.dailyspark.mobile.ads.InterstitialAdManager
 import com.dailyspark.mobile.data.RetrofitClient
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.FragmentSavedBinding
@@ -46,7 +46,7 @@ class SavedFragment : Fragment() {
             isSavedMode = true,
             lifecycleOwner = viewLifecycleOwner,
             onFavouriteClick = { quote ->
-                AdsManager.onUserAction(requireActivity()) {
+                InterstitialAdManager.onUserAction(requireActivity()) {
                     viewModel.toggleFavourite(quote.id)
                 }
             },
@@ -56,7 +56,7 @@ class SavedFragment : Fragment() {
                     putExtra("SELECTED_QUOTE_ID", quote.id)
                     putExtra("QUOTE_IDS", currentList.map { it.id }.toIntArray())
                 }
-                AdsManager.onUserAction(requireActivity()) {
+                InterstitialAdManager.onUserAction(requireActivity()) {
                     startActivity(intent)
                 }
             }

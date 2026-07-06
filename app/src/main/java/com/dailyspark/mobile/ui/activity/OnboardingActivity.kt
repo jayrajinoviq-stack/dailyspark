@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.OnboardingAdapter
-import com.dailyspark.mobile.ads.AdsManager
 import com.dailyspark.mobile.ads.AppOpenAdManager
 import com.dailyspark.mobile.databinding.ActivityOnboardingBinding
 import com.dailyspark.mobile.model.OnboardingItem
@@ -27,7 +26,6 @@ class OnboardingActivity : BaseActivity() {
         enableEdgeToEdge()
         binding = ActivityOnboardingBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.btnContinue) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
