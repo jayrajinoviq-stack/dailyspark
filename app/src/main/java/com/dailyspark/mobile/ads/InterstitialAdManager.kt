@@ -311,11 +311,9 @@ object InterstitialAdManager {
     private enum class ManagerState {
         IDLE, LOADING, READY, WAITING_FOR_LOAD, SHOWING
     }
-
     private var currentState = ManagerState.IDLE
     private var interstitialAd: InterstitialAd? = null
     private var clickCount = 0
-    private const val INTERSTITIAL_CLICK_THRESHOLD = 10
     private val mainHandler = Handler(Looper.getMainLooper())
     private var timeoutRunnable: Runnable? = null
     private const val AD_LOAD_TIMEOUT_MS = 4000L
@@ -332,7 +330,7 @@ object InterstitialAdManager {
 
         clickCount++
 
-        if (clickCount >= INTERSTITIAL_CLICK_THRESHOLD) {
+        if (clickCount >= AdsResponse.INTERSTITIAL_CLICK_THRESHOLD) {
             if (AdsResponse.isShowAdsURL) {
                 clickCount = 0
                 showUrlAd(activity, onComplete)

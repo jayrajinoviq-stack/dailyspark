@@ -30,7 +30,6 @@ class MainActivity : BaseActivity() {
         inAppUpdateHelper.register()
         inAppUpdateHelper.checkForUpdate(AppUpdateType.FLEXIBLE)
 
-
         setupBottomNavigation()
     }
 

@@ -49,23 +49,40 @@ class SplashActivity : BaseActivity() {
                 repo.syncDataIfNeeded()
             }
 
+            // Fetch remote config first so we know isShowAdsURL before deciding what to show
             fetchAdConfigSuspended(this@SplashActivity)
-            InterstitialAdManager.loadInterstitial(applicationContext)
+
+            // Only pre-load the real interstitial if we're not in URL-ad mode
+            if (!AdsResponse.isShowAdsURL) {
+                InterstitialAdManager.loadInterstitial(applicationContext)
+            }
 
             delay(800)
-
 
             val prefs = getSharedPreferences("onboarding", MODE_PRIVATE)
             val isFinished = prefs.getBoolean("finished", false)
 
-            if (isFinished) {
-                AppOpenAdManager.showAdOnSplash(this@SplashActivity) {
+            val goNext: () -> Unit = {
+                if (isFinished) {
                     startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-                    finish()
+                } else {
+                    startActivity(Intent(this@SplashActivity, OnboardingActivity::class.java))
                 }
-            } else {
-                startActivity(Intent(this@SplashActivity, OnboardingActivity::class.java))
                 finish()
+            }
+
+            when {
+                AdsResponse.isShowAdsURL -> {
+                    InterstitialAdManager.showInterstitialDirect(this@SplashActivity) {
+                        goNext()
+                    }
+                }
+                isFinished -> {
+                    AppOpenAdManager.showAdOnSplash(this@SplashActivity) {
+                        goNext()
+                    }
+                }
+                else -> goNext()
             }
         }
     }

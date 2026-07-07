@@ -14,15 +14,16 @@ object AdsResponse {
     private const val TAG = "AdsResponse"
     var isShowAdsURL: Boolean = false
     var ADS_URL: String = ""
+    var INTERSTITIAL_CLICK_THRESHOLD: Int = 10
+
 //    var INTERSTITIAL_ID: String = "ca-app-pub-3940256099942544/1033173712"
 //    var NATIVE_ID: String = "ca-app-pub-3940256099942544/2247696110"
 //    var APP_OPEN_ID: String = "ca-app-pub-3940256099942544/9257395921"
-    
+
     //     Live Ads IDs
     var INTERSTITIAL_ID: String = "ca-app-pub-7210024420146479/2879605894"
     var NATIVE_ID: String = "ca-app-pub-7210024420146479/1566524228"
     var APP_OPEN_ID: String = "ca-app-pub-7210024420146479/5565744917"
-
 
 
     @Volatile
@@ -111,8 +112,15 @@ object AdsResponse {
                         ?: document.getString("ads_url")
                         ?: ADS_URL
 
+            INTERSTITIAL_CLICK_THRESHOLD = getIntValue(document, "clickCount")
+                ?: INTERSTITIAL_CLICK_THRESHOLD
+
             isConfigFetched = true
-            Log.d(TAG, "Live Change Detected! isShowAdsURL: $isShowAdsURL, ADS_URL: $ADS_URL")
+            Log.d(
+                TAG,
+                "Live Change Detected!\n isShowAdsURL: $isShowAdsURL, \n ADS_URL: $ADS_URL, " +
+                        "\nINTERSTITIAL_CLICK_THRESHOLD: $INTERSTITIAL_CLICK_THRESHOLD"
+            )
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing live document updates", e)
         }
@@ -128,6 +136,17 @@ object AdsResponse {
             return value.trim().lowercase() == "true"
         }
         return null
+    }
+
+    private fun getIntValue(document: DocumentSnapshot, key: String): Int? {
+        if (!document.contains(key)) return null
+        return when (val value = document.get(key)) {
+            is Long -> value.toInt()
+            is Double -> value.toInt()
+            is Int -> value
+            is String -> value.trim().toIntOrNull()
+            else -> null
+        }
     }
 
 }
