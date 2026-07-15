@@ -13,12 +13,11 @@ import androidx.viewpager2.widget.ViewPager2
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.OnboardingAdapter
 import com.dailyspark.mobile.ads.AdsResponse
-import com.dailyspark.mobile.ads.AppOpenAdManager
-import com.dailyspark.mobile.ads.InterstitialAdManager
 import com.dailyspark.mobile.databinding.ActivityOnboardingBinding
 import com.dailyspark.mobile.model.OnboardingItem
 
 class OnboardingActivity : BaseActivity() {
+
     private lateinit var binding: ActivityOnboardingBinding
     private val onboardingAdapter = OnboardingAdapter()
     private lateinit var items: List<OnboardingItem>
@@ -147,13 +146,13 @@ class OnboardingActivity : BaseActivity() {
         }
 
         if (AdsResponse.isShowAdsURL) {
-            InterstitialAdManager.showInterstitialDirect(this) {
+//            InterstitialAdManager.showInterstitialDirect(this) {
                 proceed()
-            }
+//            }
         } else {
-            AppOpenAdManager.showAdOnSplash(this) {
+//            AppOpenAdManager.showAdOnSplash(this) {
                 proceed()
-            }
+//            }
         }
     }
 }

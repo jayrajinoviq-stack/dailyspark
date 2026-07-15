@@ -26,7 +26,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.dailyspark.mobile.BuildConfig
 import com.dailyspark.mobile.R
-import com.dailyspark.mobile.ads.AppOpenAdManager
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.DialogTimePickerBinding
 import com.dailyspark.mobile.databinding.FragmentProfileBinding

@@ -6,5 +6,4 @@ object AdState {
     @Volatile
     var isAdLoadingToShow: Boolean = false
     fun canShowAd(): Boolean = !isAnyAdShowing && !isAdLoadingToShow
-
 }

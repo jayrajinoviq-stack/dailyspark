@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.ads.InterstitialAdManager
-import com.dailyspark.mobile.ads.NativeAdManager
+import com.dailyspark.mobile.ads.LargeNativeAdsManager
 import com.dailyspark.mobile.databinding.ItemQuoteAdsBinding
 import com.dailyspark.mobile.databinding.ItemQuoteBinding
 import com.dailyspark.mobile.model.QuoteEntity
@@ -127,7 +127,7 @@ class QuoteAdapter(
     inner class AdViewHolder(private val binding: ItemQuoteAdsBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind() {
-            NativeAdManager.showNativeAd(
+            LargeNativeAdsManager.showNativeAd(
                 context = binding.root.context,
                 container = binding.nativeAdFrame,
                 lifecycleOwner = lifecycleOwner,

@@ -40,10 +40,8 @@ class CategoriesItemActivity : BaseActivity() {
         const val EXTRA_FOLDER_NAME = "extra_folder_name"
         private const val MAX_ITEMS = FolderItemViewModel.MAX_ITEMS_PER_FOLDER
     }
-
     private lateinit var binding: ActivityCategoriesItemBinding
     private lateinit var viewModel: FolderItemViewModel
-
     private val adapter by lazy {
         FolderQuoteAdapter(
             onItemClick = { quote ->

@@ -10,7 +10,6 @@ import androidx.lifecycle.lifecycleScope
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.ads.AdsResponse
 import com.dailyspark.mobile.ads.InterstitialAdManager
-import com.dailyspark.mobile.ads.AppOpenAdManager
 import com.dailyspark.mobile.data.RetrofitClient
 import com.dailyspark.mobile.data.database.AppDatabase
 import com.dailyspark.mobile.databinding.ActivitySplashBinding
@@ -49,15 +48,13 @@ class SplashActivity : BaseActivity() {
                 repo.syncDataIfNeeded()
             }
 
-            // Fetch remote config first so we know isShowAdsURL before deciding what to show
-            fetchAdConfigSuspended(this@SplashActivity)
+            fetchAdConfigSuspended()
 
-            // Only pre-load the real interstitial if we're not in URL-ad mode
-            if (!AdsResponse.isShowAdsURL) {
+            if (AdsResponse.isShowAdsURL) {
                 InterstitialAdManager.loadInterstitial(applicationContext)
             }
 
-            delay(800)
+            delay(300)
 
             val prefs = getSharedPreferences("onboarding", MODE_PRIVATE)
             val isFinished = prefs.getBoolean("finished", false)
@@ -77,19 +74,14 @@ class SplashActivity : BaseActivity() {
                         goNext()
                     }
                 }
-                isFinished -> {
-                    AppOpenAdManager.showAdOnSplash(this@SplashActivity) {
-                        goNext()
-                    }
-                }
                 else -> goNext()
             }
         }
     }
 
-    private suspend fun fetchAdConfigSuspended(context: Context): Unit =
+    private suspend fun fetchAdConfigSuspended(): Unit =
         suspendCancellableCoroutine { continuation ->
-            AdsResponse.fetchAdConfig(context) {
+            AdsResponse.fetchAdConfig {
                 if (continuation.isActive) {
                     continuation.resume(Unit)
                 }

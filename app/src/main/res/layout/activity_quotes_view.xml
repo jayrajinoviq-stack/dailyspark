@@ -218,7 +218,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="New quote"
-            android:textColor="#1A1A1A"
+            android:textColor="@color/app_text"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -228,9 +228,8 @@
             android:layout_height="28dp"
             android:src="@drawable/right_arrow"
             android:tint="@color/text_muted"
-            app:tint="#1A1A1A" />
+            app:tint="@color/app_text" />
 
     </LinearLayout>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

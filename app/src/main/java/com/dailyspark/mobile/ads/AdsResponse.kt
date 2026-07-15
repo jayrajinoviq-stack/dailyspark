@@ -1,152 +1,102 @@
 package com.dailyspark.mobile.ads
 
-import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
-import com.dailyspark.mobile.AdNetworkHelper
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.BuildConfig
+import com.google.firebase.Firebase
+import com.google.firebase.remoteconfig.remoteConfig
+import com.google.gson.Gson
 
 object AdsResponse {
-
     private const val TAG = "AdsResponse"
+    const val KEY_IS_SHOW_ADS = "isShowAdsURL"
+    const val KEY_ADS_URL = "AdsURL"
+    const val KEY_CLICK_THRESHOLD = "clickCount"
     var isShowAdsURL: Boolean = false
     var ADS_URL: String = ""
-    var INTERSTITIAL_CLICK_THRESHOLD: Int = 10
+    var CLICK_THRESHOLD: Long = 10
+    var INTERSTITIAL_ID: String = "ca-app-pub-3940256099942544/1033173712"
+    var NATIVE_ID: String = ""
+    var APP_OPEN_ID: String = "ca-app-pub-3940256099942544/9257395921"
+    var AdsLargeImgUrl: String = ""
+    var AdsImgClickURl: String = ""
+    var AdsSmallImgUrl: String = ""
 
-//    var INTERSTITIAL_ID: String = "ca-app-pub-3940256099942544/1033173712"
-//    var NATIVE_ID: String = "ca-app-pub-3940256099942544/2247696110"
-//    var APP_OPEN_ID: String = "ca-app-pub-3940256099942544/9257395921"
-
-    //     Live Ads IDs
-    var INTERSTITIAL_ID: String = "ca-app-pub-7210024420146479/2879605894"
-    var NATIVE_ID: String = "ca-app-pub-7210024420146479/1566524228"
-    var APP_OPEN_ID: String = "ca-app-pub-7210024420146479/5565744917"
-
-
-    @Volatile
-    var isConfigFetched: Boolean = false
-    private var isFetching: Boolean = false
-    private val mainHandler = Handler(Looper.getMainLooper())
-    private const val FETCH_TIMEOUT_MS = 4000L
-    private var firestoreListener: ListenerRegistration? = null
-    fun fetchAdConfig(context: Context, onComplete: () -> Unit) {
-        if (isConfigFetched) {
-            onComplete()
-            return
+    fun initialize() {
+        if (BuildConfig.DEBUG) {
+            loadDebugAds()
+        } else {
+            loadReleaseAds()
         }
+    }
+    fun loadDebugAds() {
+        isShowAdsURL = true
+        INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"
+        NATIVE_ID = "ca-app-pub-3940256099942544/2247696110"
+        APP_OPEN_ID = "ca-app-pub-3940256099942544/9257395921"
 
-        if (!AdNetworkHelper.isInternetAvailable(context)) {
-            Log.d(TAG, "No internet available. Using default values.")
-            onComplete()
-            return
-        }
 
-        if (isFetching) {
-            onComplete()
-            return
-        }
-
-        isFetching = true
-        var isInitialCallbackTriggered = false
-
-        val timeoutRunnable = Runnable {
-            if (!isInitialCallbackTriggered) {
-                isInitialCallbackTriggered = true
-                isFetching = false
-                Log.d(TAG, "Initial Firestore fetch timed out. Proceeding with defaults.")
-                onComplete()
-            }
-        }
-        mainHandler.postDelayed(timeoutRunnable, FETCH_TIMEOUT_MS)
+        ADS_URL = Firebase.remoteConfig.getString(KEY_ADS_URL)
+        CLICK_THRESHOLD = Firebase.remoteConfig.getLong(KEY_CLICK_THRESHOLD)
+//        AdsLargeImgUrl = ""
+//        AdsSmallImgUrl =
+//            ""
+        AdsImgClickURl = Firebase.remoteConfig.getString(KEY_ADS_URL)
 
         try {
-            val db = FirebaseFirestore.getInstance()
-            firestoreListener?.remove()
-            firestoreListener = db.collection("config").document("appSettings")
-                .addSnapshotListener { snapshot, error ->
+            val json = Firebase.remoteConfig.getString("web_native_ads")
 
-                    if (error != null) {
-                        Log.e(TAG, "Firestore live listener failed", error)
-                        if (!isInitialCallbackTriggered) {
-                            isInitialCallbackTriggered = true
-                            isFetching = false
-                            mainHandler.removeCallbacks(timeoutRunnable)
-                            onComplete()
-                        }
-                        return@addSnapshotListener
-                    }
+            val jsonObject = Gson().fromJson(json, com.google.gson.JsonObject::class.java)
 
-                    if (snapshot != null && snapshot.exists()) {
-                        parseFirestoreDocument(snapshot)
-                    } else {
-                        Log.d(TAG, "Document config/appSettings does not exist.")
-                    }
+            AdsLargeImgUrl = jsonObject.get("large_web_native_img")?.asString ?: ""
+            AdsSmallImgUrl = jsonObject.get("small_web_native_img")?.asString ?: ""
 
-                    if (!isInitialCallbackTriggered) {
-                        isInitialCallbackTriggered = true
-                        isFetching = false
-                        mainHandler.removeCallbacks(timeoutRunnable)
-                        onComplete()
-                    }
-                }
+            Log.d(TAG, "Large Image: $AdsLargeImgUrl")
+            Log.d(TAG, "Small Image: $AdsSmallImgUrl")
+
         } catch (e: Exception) {
-            Log.e(TAG, "Error initializing live Firestore listener", e)
-            mainHandler.removeCallbacks(timeoutRunnable)
-            if (!isInitialCallbackTriggered) {
-                isInitialCallbackTriggered = true
-                isFetching = false
-                onComplete()
-            }
+            Log.e(TAG, "Failed to parse web_native_ads", e)
+            AdsLargeImgUrl = ""
+            AdsSmallImgUrl = ""
         }
+
+        AdsImgClickURl = Firebase.remoteConfig.getString(KEY_ADS_URL)
+
     }
 
-    private fun parseFirestoreDocument(document: DocumentSnapshot) {
+    fun loadReleaseAds() {
+//        INTERSTITIAL_ID = "ca-app-pub-7210024420146479/7665412188"
+//        NATIVE_ID = "ca-app-pub-7210024420146479/8879291040"
+//        APP_OPEN_ID = "ca-app-pub-7210024420146479/5215378204"
+
+
+        var INTERSTITIAL_ID: String = "ca-app-pub-7210024420146479/2879605894"
+        var NATIVE_ID: String = "ca-app-pub-7210024420146479/1566524228"
+        var APP_OPEN_ID: String = "ca-app-pub-7210024420146479/5565744917"
+
+        ADS_URL = Firebase.remoteConfig.getString(KEY_ADS_URL)
+        CLICK_THRESHOLD = Firebase.remoteConfig.getLong(KEY_CLICK_THRESHOLD)
+        isShowAdsURL = Firebase.remoteConfig.getBoolean(KEY_IS_SHOW_ADS)
         try {
-            isShowAdsURL = getBooleanValue(document, "isShowAdsURL") ?: isShowAdsURL
-
-            ADS_URL = document.getString("AdsURL")
-                ?: document.getString("adsUrl")
-                        ?: document.getString("ads_url")
-                        ?: ADS_URL
-
-            INTERSTITIAL_CLICK_THRESHOLD = getIntValue(document, "clickCount")
-                ?: INTERSTITIAL_CLICK_THRESHOLD
-
-            isConfigFetched = true
-            Log.d(
-                TAG,
-                "Live Change Detected!\n isShowAdsURL: $isShowAdsURL, \n ADS_URL: $ADS_URL, " +
-                        "\nINTERSTITIAL_CLICK_THRESHOLD: $INTERSTITIAL_CLICK_THRESHOLD"
-            )
+            val json = Firebase.remoteConfig.getString("web_native_ads")
+            val jsonObject = Gson().fromJson(json, com.google.gson.JsonObject::class.java)
+            AdsLargeImgUrl = jsonObject.get("large_web_native_img")?.asString ?: ""
+            AdsSmallImgUrl = jsonObject.get("small_web_native_img")?.asString ?: ""
+            Log.d(TAG, "Large Image: $AdsLargeImgUrl")
+            Log.d(TAG, "Small Image: $AdsSmallImgUrl")
         } catch (e: Exception) {
-            Log.e(TAG, "Error parsing live document updates", e)
+            Log.e(TAG, "Failed to parse web_native_ads", e)
+            AdsLargeImgUrl = ""
+            AdsSmallImgUrl = ""
         }
+        AdsImgClickURl = Firebase.remoteConfig.getString(KEY_ADS_URL)
     }
 
-    private fun getBooleanValue(document: DocumentSnapshot, key: String): Boolean? {
-        if (!document.contains(key)) return null
-        val value = document.get(key)
-        if (value is Boolean) {
-            return value
-        }
-        if (value is String) {
-            return value.trim().lowercase() == "true"
-        }
-        return null
+    fun fetchAdConfig(onComplete: (() -> Unit)? = null) {
+        RemoteConfigHelper.init(onComplete)
     }
 
-    private fun getIntValue(document: DocumentSnapshot, key: String): Int? {
-        if (!document.contains(key)) return null
-        return when (val value = document.get(key)) {
-            is Long -> value.toInt()
-            is Double -> value.toInt()
-            is Int -> value
-            is String -> value.trim().toIntOrNull()
-            else -> null
-        }
-    }
+
+
+
 
 }

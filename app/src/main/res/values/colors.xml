@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <color name="black">#FF000000</color>
     <color name="shimmer_placeholder">#E0E0E0</color>
 
     <color name="shimmer_base_color">#E0E0E0</color>

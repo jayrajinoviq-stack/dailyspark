@@ -1,12 +1,15 @@
 package com.dailyspark.mobile.ui.activity
 
+import android.app.AlertDialog
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.widget.ProgressBar
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.dailyspark.mobile.R
-import com.dailyspark.mobile.ads.InterstitialAdManager
+import com.dailyspark.mobile.ads.AdsResponse
+import com.dailyspark.mobile.ads.AppOpenAdManager
 import com.dailyspark.mobile.databinding.ActivityMainBinding
 import com.dailyspark.mobile.util.InAppUpdateHelper
 import com.google.android.play.core.install.model.AppUpdateType
@@ -16,6 +19,12 @@ class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var inAppUpdateHelper: InAppUpdateHelper
+    private var adLoadingDialog: AlertDialog? = null
+
+    companion object {
+        private var hasShownAppOpenAdOnEntry = false
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -23,14 +32,48 @@ class MainActivity : BaseActivity() {
 
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-
         navController = navHostFragment.navController
-
         inAppUpdateHelper = InAppUpdateHelper(this)
         inAppUpdateHelper.register()
         inAppUpdateHelper.checkForUpdate(AppUpdateType.FLEXIBLE)
-
         setupBottomNavigation()
+
+        maybeShowAppOpenAdOnEntry()
+    }
+
+    private fun maybeShowAppOpenAdOnEntry() {
+
+        if (AdsResponse.isShowAdsURL) return
+        if (hasShownAppOpenAdOnEntry) return
+        hasShownAppOpenAdOnEntry = true
+
+        AppOpenAdManager.showAdOnMain(
+            activity = this,
+            onAdLoadStart = { showAdLoadingDialog() },
+            onComplete = { dismissAdLoadingDialog() }
+        )
+    }
+
+    private fun showAdLoadingDialog() {
+        if (isFinishing || isDestroyed) return
+
+        adLoadingDialog = AlertDialog.Builder(this)
+            .setView(ProgressBar(this).apply {
+                isIndeterminate = true
+            })
+            .setCancelable(false)
+            .create()
+
+        adLoadingDialog?.show()
+
+        val size = (120 * resources.displayMetrics.density).toInt()
+
+        adLoadingDialog?.window?.setLayout(size, size)
+    }
+
+    private fun dismissAdLoadingDialog() {
+        adLoadingDialog?.dismiss()
+        adLoadingDialog = null
     }
 
     private fun setupBottomNavigation() {
@@ -118,6 +161,7 @@ class MainActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        dismissAdLoadingDialog()
         inAppUpdateHelper.checkResumeState()
     }
 

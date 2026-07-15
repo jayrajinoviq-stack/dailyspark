@@ -5,7 +5,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.dailyspark.mobile.databinding.ItemOnboardingBinding
 import com.dailyspark.mobile.model.OnboardingItem
 
@@ -17,10 +16,7 @@ class OnboardingAdapter : ListAdapter<OnboardingItem, OnboardingAdapter.ViewHold
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        Glide.with(holder.itemView.context)
-            .load(getItem(position).imageRes)
-            .centerCrop()
-            .into(holder.binding.ivBackground)
+        holder.binding.ivBackground.setImageResource(getItem(position).imageRes)
     }
 
     class ViewHolder(val binding: ItemOnboardingBinding) : RecyclerView.ViewHolder(binding.root)

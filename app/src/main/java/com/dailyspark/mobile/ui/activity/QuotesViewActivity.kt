@@ -50,6 +50,7 @@ class QuotesViewActivity : BaseActivity() {
     private var currentQuoteId: Int = -1
     private var randomNext: Boolean = false
     private var isSingleItemMode: Boolean = false
+
     companion object {
         const val EXTRA_SINGLE_ITEM = "extra_single_item"
         const val EXTRA_QUOTE_TEXT = "extra_quote_text"
@@ -229,7 +230,9 @@ class QuotesViewActivity : BaseActivity() {
                 quotesList.first()
             }
             currentQuoteId = next.id
-            displayQuote(next)
+            InterstitialAdManager.onUserAction(this@QuotesViewActivity) {
+                displayQuote(next)
+            }
         }
 
         binding.menu.setOnClickListener {

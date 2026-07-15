@@ -116,4 +116,6 @@ dependencies {
 
     implementation("com.facebook.shimmer:shimmer:0.5.0")
 
+    implementation("com.google.firebase:firebase-config-ktx:22.0.1")
+    implementation("com.google.code.gson:gson:2.14.0")
 }
