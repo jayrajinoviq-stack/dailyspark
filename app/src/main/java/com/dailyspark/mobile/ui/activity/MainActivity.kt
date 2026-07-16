@@ -2,14 +2,19 @@ package com.dailyspark.mobile.ui.activity
 
 import android.app.AlertDialog
 import android.content.res.ColorStateList
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.Gravity
+import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.ads.AdsResponse
 import com.dailyspark.mobile.ads.AppOpenAdManager
+import com.dailyspark.mobile.ads.InterstitialAdManager
 import com.dailyspark.mobile.databinding.ActivityMainBinding
 import com.dailyspark.mobile.util.InAppUpdateHelper
 import com.google.android.play.core.install.model.AppUpdateType
@@ -42,8 +47,11 @@ class MainActivity : BaseActivity() {
     }
 
     private fun maybeShowAppOpenAdOnEntry() {
-
-        if (AdsResponse.isShowAdsURL) return
+        if (AdsResponse.isShowAdsURL) {
+            InterstitialAdManager.showInterstitialDirect(this) {
+            }
+            return
+        }
         if (hasShownAppOpenAdOnEntry) return
         hasShownAppOpenAdOnEntry = true
 
@@ -57,18 +65,57 @@ class MainActivity : BaseActivity() {
     private fun showAdLoadingDialog() {
         if (isFinishing || isDestroyed) return
 
+        val size = (120 * resources.displayMetrics.density).toInt()
+        val mutedColor = getColor(R.color.app_muted)
+        val padding10dp = (10 * resources.displayMetrics.density).toInt()
+
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+            )
+            setPadding(padding10dp, padding10dp, padding10dp, padding10dp)
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 16 * resources.displayMetrics.density
+                setColor(mutedColor)
+            }
+        }
+
+        val progressBar = ProgressBar(this).apply {
+            isIndeterminate = true
+            indeterminateTintList = ColorStateList.valueOf(getColor(android.R.color.white))
+            layoutParams = LinearLayout.LayoutParams(
+                (36 * resources.displayMetrics.density).toInt(),
+                (36 * resources.displayMetrics.density).toInt()
+            )
+        }
+
+        val label = TextView(this).apply {
+            text = getString(R.string.loading_ad)
+            setTextColor(getColor(android.R.color.white))
+            textSize = 12f
+            gravity = Gravity.CENTER
+            setPadding(0, 10, 0, 0)
+        }
+
+        container.addView(progressBar)
+        container.addView(label)
+
         adLoadingDialog = AlertDialog.Builder(this)
-            .setView(ProgressBar(this).apply {
-                isIndeterminate = true
-            })
+            .setView(container)
             .setCancelable(false)
             .create()
 
         adLoadingDialog?.show()
 
-        val size = (120 * resources.displayMetrics.density).toInt()
-
-        adLoadingDialog?.window?.setLayout(size, size)
+        adLoadingDialog?.window?.apply {
+            setBackgroundDrawableResource(android.R.color.transparent)
+            setGravity(Gravity.CENTER)
+            setLayout(size, size)
+        }
     }
 
     private fun dismissAdLoadingDialog() {

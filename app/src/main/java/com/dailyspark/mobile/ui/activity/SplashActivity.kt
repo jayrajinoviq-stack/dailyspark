@@ -1,6 +1,5 @@
 package com.dailyspark.mobile.ui.activity
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -50,7 +49,9 @@ class SplashActivity : BaseActivity() {
 
             fetchAdConfigSuspended()
 
-            if (AdsResponse.isShowAdsURL) {
+            val showAds = AdsResponse.isShowAdsURL
+
+            if (showAds) {
                 InterstitialAdManager.loadInterstitial(applicationContext)
             }
 
@@ -59,23 +60,12 @@ class SplashActivity : BaseActivity() {
             val prefs = getSharedPreferences("onboarding", MODE_PRIVATE)
             val isFinished = prefs.getBoolean("finished", false)
 
-            val goNext: () -> Unit = {
-                if (isFinished) {
-                    startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-                } else {
-                    startActivity(Intent(this@SplashActivity, OnboardingActivity::class.java))
-                }
-                finish()
+            if (isFinished) {
+                startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+            } else {
+                startActivity(Intent(this@SplashActivity, OnboardingActivity::class.java))
             }
-
-            when {
-                AdsResponse.isShowAdsURL -> {
-                    InterstitialAdManager.showInterstitialDirect(this@SplashActivity) {
-                        goNext()
-                    }
-                }
-                else -> goNext()
-            }
+            finish()
         }
     }
 

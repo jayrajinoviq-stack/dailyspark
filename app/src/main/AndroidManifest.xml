@@ -80,14 +80,14 @@
         </receiver>
 
         <!-- Test Ad Id-->
-        <!--                <meta-data-->
-        <!--                    android:name="com.google.android.gms.ads.APPLICATION_ID"-->
-        <!--                    android:value="ca-app-pub-3940256099942544~3347511713"/>-->
-
-        <!-- Live Ad Id-->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-7210024420146479~9733273951" />
+            android:value="ca-app-pub-3940256099942544~3347511713" />
+
+        <!--        &lt;!&ndash; Live Ad Id&ndash;&gt;-->
+        <!--        <meta-data-->
+        <!--            android:name="com.google.android.gms.ads.APPLICATION_ID"-->
+        <!--            android:value="ca-app-pub-7210024420146479~9733273951" />-->
 
     </application>
 

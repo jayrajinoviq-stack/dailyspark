@@ -13,4 +13,5 @@
     <string name="_5_10_quotes">5/10 quotes</string>
     <string name="delete_category">Delete Category</string>
     <string name="inspiration_for_every_day">Inspiration For Every Day</string>
+    <string name="loading_ad">Loading Ad....</string>
 </resources>

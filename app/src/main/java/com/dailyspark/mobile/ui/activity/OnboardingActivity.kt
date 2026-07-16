@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.dailyspark.mobile.R
 import com.dailyspark.mobile.adapter.OnboardingAdapter
-import com.dailyspark.mobile.ads.AdsResponse
 import com.dailyspark.mobile.databinding.ActivityOnboardingBinding
 import com.dailyspark.mobile.model.OnboardingItem
 
@@ -137,6 +136,7 @@ class OnboardingActivity : BaseActivity() {
             .start()
     }
 
+
     private fun finishOnboarding() {
         val proceed: () -> Unit = {
             getSharedPreferences("onboarding", MODE_PRIVATE).edit().putBoolean("finished", true)
@@ -144,15 +144,6 @@ class OnboardingActivity : BaseActivity() {
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
-
-        if (AdsResponse.isShowAdsURL) {
-//            InterstitialAdManager.showInterstitialDirect(this) {
-                proceed()
-//            }
-        } else {
-//            AppOpenAdManager.showAdOnSplash(this) {
-                proceed()
-//            }
-        }
+        proceed()
     }
 }
