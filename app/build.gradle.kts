@@ -12,7 +12,6 @@ android {
     namespace = "com.dailyspark.mobile"
     compileSdk = 36
 
-
     val appVersionCode = 3
     val appVersionName = "1.2"
     val currentDate: String = SimpleDateFormat("yyyy-MM-dd").format(Date())

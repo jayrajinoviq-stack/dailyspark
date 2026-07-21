@@ -15,6 +15,7 @@ import com.dailyspark.mobile.R
 import com.dailyspark.mobile.ads.AdsResponse
 import com.dailyspark.mobile.ads.AppOpenAdManager
 import com.dailyspark.mobile.ads.InterstitialAdManager
+import com.dailyspark.mobile.ads.SmallNativeAdManager
 import com.dailyspark.mobile.databinding.ActivityMainBinding
 import com.dailyspark.mobile.util.InAppUpdateHelper
 import com.google.android.play.core.install.model.AppUpdateType
@@ -42,6 +43,8 @@ class MainActivity : BaseActivity() {
         inAppUpdateHelper.register()
         inAppUpdateHelper.checkForUpdate(AppUpdateType.FLEXIBLE)
         setupBottomNavigation()
+
+
 
         maybeShowAppOpenAdOnEntry()
     }

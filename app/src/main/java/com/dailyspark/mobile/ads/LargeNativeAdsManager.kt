@@ -20,114 +20,32 @@ import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.nativead.NativeAd
+import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
 object LargeNativeAdsManager {
 
     private const val LOAD_TIMEOUT_MS = 5000L
+
+    private const val MAX_ATTEMPTS = 2
     private val mainHandler = Handler(Looper.getMainLooper())
     private val adCache = ConcurrentHashMap<String, NativeAd>()
-    private val loadingIds = ConcurrentHashMap.newKeySet<String>()
+    private val adOwners = ConcurrentHashMap<String, WeakReference<LifecycleOwner>>()
+    private val pendingOwners = ConcurrentHashMap<String, WeakReference<LifecycleOwner>>()
 
-//    fun showNativeAd(
-//        context: Context,
-//        container: FrameLayout,
-//        lifecycleOwner: LifecycleOwner,
-//        adUnitKey: String,
-//        onFinished: (() -> Unit)? = null
-//    ) {
-//        fun isAlive(): Boolean =
-//            lifecycleOwner.lifecycle.currentState != Lifecycle.State.DESTROYED
-//        if (!isAlive()) return
-//        val inflater = LayoutInflater.from(context)
-//        if (AdsResponse.isShowAdsURL && AdsResponse.AdsLargeImgUrl.isNotBlank()) {
-//            showImageAd(context, container, inflater, onFinished)
-//            return
-//        }
-//        val cachedAd = adCache[adUnitKey]
-//        if (cachedAd != null) {
-//            container.removeAllViews()
-//            val adBinding = LayoutNativeAdBinding.inflate(inflater, container, false)
-//            bindNativeAd(cachedAd, adBinding)
-//            container.addView(adBinding.root)
-//            container.visibility = View.VISIBLE
-//            onFinished?.invoke()
-//            return
-//        }
-//
-//        if (loadingIds.contains(adUnitKey)) {
-//            showShimmerOnly(inflater, container)
-//            return
-//        }
-//
-//        val completed = AtomicBoolean(false)
-//
-//        fun finish() {
-//            if (completed.compareAndSet(false, true)) {
-//                loadingIds.remove(adUnitKey)
-//                mainHandler.post { onFinished?.invoke() }
-//            }
-//        }
-//
-//        container.removeAllViews()
-//
-//        val shimmerBinding = LayoutNativeShimmerBinding.inflate(inflater, container, false)
-//        container.addView(shimmerBinding.root)
-//        container.visibility = View.VISIBLE
-//        shimmerBinding.shimmerLayout.startShimmer()
-//
-//        if (!AdNetworkHelper.isInternetAvailable(context)) {
-//            collapse(shimmerBinding, container)
-//            finish()
-//            return
-//        }
-//
-//        loadingIds.add(adUnitKey)
-//
-//        val timeoutRunnable = Runnable {
-//            if (!completed.get()) {
-//                collapse(shimmerBinding, container)
-//                finish()
-//            }
-//        }
-//        mainHandler.postDelayed(timeoutRunnable, LOAD_TIMEOUT_MS)
-//
-//        val adLoader = AdLoader.Builder(context, AdsResponse.NATIVE_ID)
-//            .forNativeAd { nativeAd ->
-//                mainHandler.removeCallbacks(timeoutRunnable)
-//
-//                if (completed.get() || !isAlive()) {
-//                    nativeAd.destroy()
-//                    loadingIds.remove(adUnitKey)
-//                    return@forNativeAd
-//                }
-//
-//                adCache[adUnitKey] = nativeAd
-//
-//                shimmerBinding.shimmerLayout.stopShimmer()
-//                container.removeAllViews()
-//
-//                val adBinding = LayoutNativeAdBinding.inflate(inflater, container, false)
-//                bindNativeAd(nativeAd, adBinding)
-//
-//                container.addView(adBinding.root)
-//                container.visibility = View.VISIBLE
-//
-//                finish()
-//            }
-//            .withAdListener(object : AdListener() {
-//                override fun onAdFailedToLoad(error: LoadAdError) {
-//                    mainHandler.removeCallbacks(timeoutRunnable)
-//                    collapse(shimmerBinding, container)
-//                    finish()
-//                }
-//            })
-//            .build()
-//
-//        adLoader.loadAd(AdRequest.Builder().build())
-//    }
+    private data class Waiter(
+        val container: FrameLayout,
+        val inflater: LayoutInflater,
+        val lifecycleOwner: LifecycleOwner,
+        val onFinished: (() -> Unit)?
+    )
 
+    private val waiters = ConcurrentHashMap<String, CopyOnWriteArrayList<Waiter>>()
+
+    private fun isAlive(owner: LifecycleOwner): Boolean =
+        owner.lifecycle.currentState != Lifecycle.State.DESTROYED
 
     fun showNativeAd(
         context: Context,
@@ -136,9 +54,7 @@ object LargeNativeAdsManager {
         adUnitKey: String,
         onFinished: (() -> Unit)? = null
     ) {
-        fun isAlive(): Boolean =
-            lifecycleOwner.lifecycle.currentState != Lifecycle.State.DESTROYED
-        if (!isAlive()) return
+        if (!isAlive(lifecycleOwner)) return
         val inflater = LayoutInflater.from(context)
 
         if (AdsResponse.isShowAdsURL) {
@@ -153,49 +69,54 @@ object LargeNativeAdsManager {
         }
 
         val cachedAd = adCache[adUnitKey]
+        val cachedOwner = adOwners[adUnitKey]?.get()
         if (cachedAd != null) {
-            container.removeAllViews()
-            val adBinding = LayoutNativeAdBinding.inflate(inflater, container, false)
-            bindNativeAd(cachedAd, adBinding)
-            container.addView(adBinding.root)
-            container.visibility = View.VISIBLE
-            onFinished?.invoke()
-            return
-        }
-
-        if (loadingIds.contains(adUnitKey)) {
-            showShimmerOnly(inflater, container)
-            return
-        }
-
-        val completed = AtomicBoolean(false)
-
-        fun finish() {
-            if (completed.compareAndSet(false, true)) {
-                loadingIds.remove(adUnitKey)
-                mainHandler.post { onFinished?.invoke() }
+            if (cachedOwner === lifecycleOwner) {
+                container.removeAllViews()
+                val adBinding = LayoutNativeAdBinding.inflate(inflater, container, false)
+                bindNativeAd(cachedAd, adBinding)
+                container.addView(adBinding.root)
+                container.visibility = View.VISIBLE
+                onFinished?.invoke()
+                return
+            } else {
+                adCache.remove(adUnitKey)?.destroy()
+                adOwners.remove(adUnitKey)
             }
         }
 
         container.removeAllViews()
-
         val shimmerBinding = LayoutNativeShimmerBinding.inflate(inflater, container, false)
         container.addView(shimmerBinding.root)
         container.visibility = View.VISIBLE
         shimmerBinding.shimmerLayout.startShimmer()
 
         if (!AdNetworkHelper.isInternetAvailable(context)) {
-            collapse(shimmerBinding, container)
-            finish()
+            container.removeAllViews()
+            container.visibility = View.GONE
+            onFinished?.invoke()
+            return
+        }
+        val existing = waiters[adUnitKey]
+        if (existing != null) {
+            existing.add(Waiter(container, inflater, lifecycleOwner, onFinished))
             return
         }
 
-        loadingIds.add(adUnitKey)
+        val list = CopyOnWriteArrayList<Waiter>()
+        list.add(Waiter(container, inflater, lifecycleOwner, onFinished))
+        waiters[adUnitKey] = list
+        pendingOwners[adUnitKey] = WeakReference(lifecycleOwner)
+
+        loadAttempt(context, adUnitKey, attempt = 1)
+    }
+
+    private fun loadAttempt(context: Context, adUnitKey: String, attempt: Int) {
+        val completed = AtomicBoolean(false)
 
         val timeoutRunnable = Runnable {
-            if (!completed.get()) {
-                collapse(shimmerBinding, container)
-                finish()
+            if (completed.compareAndSet(false, true)) {
+                onAttemptFinished(context, adUnitKey, attempt, nativeAd = null)
             }
         }
         mainHandler.postDelayed(timeoutRunnable, LOAD_TIMEOUT_MS)
@@ -203,31 +124,18 @@ object LargeNativeAdsManager {
         val adLoader = AdLoader.Builder(context, AdsResponse.NATIVE_ID)
             .forNativeAd { nativeAd ->
                 mainHandler.removeCallbacks(timeoutRunnable)
-
-                if (completed.get() || !isAlive()) {
+                if (completed.compareAndSet(false, true)) {
+                    onAttemptFinished(context, adUnitKey, attempt, nativeAd)
+                } else {
                     nativeAd.destroy()
-                    loadingIds.remove(adUnitKey)
-                    return@forNativeAd
                 }
-
-                adCache[adUnitKey] = nativeAd
-
-                shimmerBinding.shimmerLayout.stopShimmer()
-                container.removeAllViews()
-
-                val adBinding = LayoutNativeAdBinding.inflate(inflater, container, false)
-                bindNativeAd(nativeAd, adBinding)
-
-                container.addView(adBinding.root)
-                container.visibility = View.VISIBLE
-
-                finish()
             }
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(error: LoadAdError) {
                     mainHandler.removeCallbacks(timeoutRunnable)
-                    collapse(shimmerBinding, container)
-                    finish()
+                    if (completed.compareAndSet(false, true)) {
+                        onAttemptFinished(context, adUnitKey, attempt, nativeAd = null)
+                    }
                 }
             })
             .build()
@@ -235,6 +143,46 @@ object LargeNativeAdsManager {
         adLoader.loadAd(AdRequest.Builder().build())
     }
 
+    private fun onAttemptFinished(
+        context: Context,
+        adUnitKey: String,
+        attempt: Int,
+        nativeAd: NativeAd?
+    ) {
+        if (nativeAd != null) {
+            adCache[adUnitKey] = nativeAd
+            pendingOwners.remove(adUnitKey)?.let { adOwners[adUnitKey] = it }
+            resolveWaiters(adUnitKey) { waiter ->
+                waiter.container.removeAllViews()
+                val adBinding = LayoutNativeAdBinding.inflate(waiter.inflater, waiter.container, false)
+                bindNativeAd(nativeAd, adBinding)
+                waiter.container.addView(adBinding.root)
+                waiter.container.visibility = View.VISIBLE
+            }
+            return
+        }
+
+        if (attempt < MAX_ATTEMPTS) {
+            mainHandler.post { loadAttempt(context, adUnitKey, attempt + 1) }
+            return
+        }
+
+        pendingOwners.remove(adUnitKey)
+        resolveWaiters(adUnitKey) { waiter ->
+            waiter.container.removeAllViews()
+            waiter.container.visibility = View.GONE
+        }
+    }
+
+    private fun resolveWaiters(adUnitKey: String, apply: (Waiter) -> Unit) {
+        val list = waiters.remove(adUnitKey) ?: return
+        for (waiter in list) {
+            if (isAlive(waiter.lifecycleOwner)) {
+                apply(waiter)
+            }
+            waiter.onFinished?.invoke()
+        }
+    }
 
     private fun showImageAd(
         context: Context,
@@ -263,26 +211,13 @@ object LargeNativeAdsManager {
         if (url.isBlank()) return
         try {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK.takeIf { context !is android.app.Activity }
-                ?: 0)
+            if (context !is android.app.Activity) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
             context.startActivity(intent)
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    private fun showShimmerOnly(inflater: LayoutInflater, container: FrameLayout) {
-        container.removeAllViews()
-        val shimmerBinding = LayoutNativeShimmerBinding.inflate(inflater, container, false)
-        container.addView(shimmerBinding.root)
-        container.visibility = View.VISIBLE
-        shimmerBinding.shimmerLayout.startShimmer()
-    }
-
-    private fun collapse(shimmerBinding: LayoutNativeShimmerBinding, container: FrameLayout) {
-        shimmerBinding.shimmerLayout.stopShimmer()
-        container.removeAllViews()
-        container.visibility = View.GONE
     }
 
     private fun bindNativeAd(nativeAd: NativeAd, binding: LayoutNativeAdBinding) {
@@ -312,12 +247,15 @@ object LargeNativeAdsManager {
 
     fun invalidate(adUnitKey: String) {
         adCache.remove(adUnitKey)?.destroy()
+        adOwners.remove(adUnitKey)
     }
 
     fun destroy() {
         mainHandler.removeCallbacksAndMessages(null)
         adCache.values.forEach { it.destroy() }
         adCache.clear()
-        loadingIds.clear()
+        adOwners.clear()
+        pendingOwners.clear()
+        waiters.clear()
     }
 }
