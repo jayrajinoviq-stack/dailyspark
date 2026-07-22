@@ -131,7 +131,7 @@ class QuoteAdapter(
                 context = binding.root.context,
                 container = binding.nativeAdFrame,
                 lifecycleOwner = lifecycleOwner,
-                adUnitKey = "saved_list_ad_slot_${System.currentTimeMillis()}"
+                adUnitKey = "saved_list_ad_slot_${QuoteAdapter::class.java}"
             )
         }
     }
